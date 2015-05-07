@@ -20,6 +20,7 @@ script:
   - cd build
   - make
   - make install
-  - cd ../install/
+  - cd ../install/lib/
   - export LD_LIBRARY_PATH=`pwd`
+  - cd ../../../..
   - julia -e 'Pkg.init(); Pkg.clone(pwd()); Pkg.test("z3")'
