@@ -14,7 +14,7 @@ before_install:
   - sudo apt-get install libpcre3-dev julia -y
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
 script:
-  - git clone git@github.com:Z3Prover/z3.git extern/z3
+  - git clone git://github.com/Z3Prover/z3.git extern/z3
   - cd extern/z3
   - python scripts/mk_make.py  --prefix=`pwd`/install
   - cd build
