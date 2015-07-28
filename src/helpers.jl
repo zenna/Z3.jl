@@ -9,7 +9,7 @@
 Enable model construction. Other configuration parameters can be passed in the cfg variable
 Also enable tracing to stderr and register custom error handler.
 """
-function mk_context_custom(cfg::Z3_config, err::Z3_error_handler)
+function mk_context_custom(cfg::Z3Config, err::Z3_error_handler)
   Z3_set_param_value(cfg, "model", "true");
   ctx = Z3_mk_context(cfg);
   Z3_set_error_handler(ctx, err);
