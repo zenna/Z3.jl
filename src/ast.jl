@@ -30,34 +30,115 @@ function mk_var{T <: MathNumber}(::Type{T}, ctx::Context, name::ASCIIString)
   mk_var(ctx, name, ty)
 end
 
-# ## Make Numerals
-# ## =============
-# "Create a Z3 integer node using a C int."
-# function mk_int(ctx::Context, v::Cint)
-#   ty::Z3_sort = Z3_mk_int_sort(ctx);
-#   return Z3_mk_int(ctx, v, ty);
-# end
-
 ## Arithmetic
 # ## ==========
-# boolop2opensmt = @compat Dict(:(>=) => opensmt_mk_geq, :(>) => opensmt_mk_gt,
-#                               :(<=) => opensmt_mk_leq, :(<) => opensmt_mk_lt,
-#                               :(==) => opensmt_mk_eq)
+boolop2z3 = @compat Dict(:(>=) => mk_ge, :(>) => mk_gt,
+                              :(<=) => mk_le, :(<) => mk_lt,
+                              :(==) => mk_eq)
+
+## Real × Real -> Bool
+for (op,func) in boolop2z3
+  @eval ($op){T1<:Real}(x::RealVarAst{Real}, y::T1; ctx::Context = global_context()) =
+    AppAst{Bool}($func(ctx, x, NumeralAst(y; ctx=ctx)))
+end
+
+# promote
+
+
+
 #
-# ## Real × Real -> Bool
-# for (op,opensmt_func) in boolop2opensmt
-#   @eval ($op){T1<:Real, T2<:Real}(ctx::Context, x::Ex{T1}, y::Ex{T2}) =
-#     Ex{Bool}($opensmt_func(ctx.ctx,x.e,y.e), union(x.vars,y.vars))
-#   # Var and constant c
-#   @eval ($op){T1<:Real, T2<:Real}(ctx::Context, x::Ex{T1}, c::T2) =
-#     Ex{Bool}($opensmt_func(ctx.ctx,x.e,convert(ctx, Ex{promote_type(T1,T2)},c).e), x.vars)
+# @wrap function Z3_mk_eq(c::Z3_context,l::Z3_ast,r::Z3_ast)
+#     ccall((:Z3_mk_eq,"libz3"),Z3_ast,(Z3_context,Z3_ast,Z3_ast),c,l,r)
+# end
 #
-#   # constant c and Var
-#   @eval ($op){T1<:Real, T2<:Real}(ctx::Context, c::T1, x::Ex{T2}) =
-#     Ex{Bool}($opensmt_func(ctx.ctx,convert(ctx, Ex{promote_type(T1,T2)},c).e, x.e),x.vars)
+# @wrap function Z3_mk_distinct(c::Z3_context,num_args::Uint32,args::Ptr{Z3_ast})
+#     ccall((:Z3_mk_distinct,"libz3"),Z3_ast,(Z3_context,Uint32,Ptr{Z3_ast}),c,num_args,args)
+# end
 #
-#   # Default Contex
-#   @eval ($op){T1<:Real, T2<:Real}(x::Ex{T1}, y::Ex{T2}) = ($op)(global_context(), x, y)
-#   @eval ($op){T1<:Real, T2<:Real}(x::Ex{T1}, c::T2) = ($op)(global_context(), x, c)
-#   @eval ($op){T1<:Real, T2<:Real}(c::T1, x::Ex{T2}) = ($op)(global_context(), c, x)
+# @wrap function Z3_mk_not(c::Z3_context,a::Z3_ast)
+#     ccall((:Z3_mk_not,"libz3"),Z3_ast,(Z3_context,Z3_ast),c,a)
+# end
+#
+# @wrap function Z3_mk_ite(c::Z3_context,t1::Z3_ast,t2::Z3_ast,t3::Z3_ast)
+#     ccall((:Z3_mk_ite,"libz3"),Z3_ast,(Z3_context,Z3_ast,Z3_ast,Z3_ast),c,t1,t2,t3)
+# end
+#
+# @wrap function Z3_mk_iff(c::Z3_context,t1::Z3_ast,t2::Z3_ast)
+#     ccall((:Z3_mk_iff,"libz3"),Z3_ast,(Z3_context,Z3_ast,Z3_ast),c,t1,t2)
+# end
+#
+# @wrap function Z3_mk_implies(c::Z3_context,t1::Z3_ast,t2::Z3_ast)
+#     ccall((:Z3_mk_implies,"libz3"),Z3_ast,(Z3_context,Z3_ast,Z3_ast),c,t1,t2)
+# end
+#
+# @wrap function Z3_mk_xor(c::Z3_context,t1::Z3_ast,t2::Z3_ast)
+#     ccall((:Z3_mk_xor,"libz3"),Z3_ast,(Z3_context,Z3_ast,Z3_ast),c,t1,t2)
+# end
+#
+# @wrap function Z3_mk_and(c::Z3_context,num_args::Uint32,args::Ptr{Z3_ast})
+#     ccall((:Z3_mk_and,"libz3"),Z3_ast,(Z3_context,Uint32,Ptr{Z3_ast}),c,num_args,args)
+# end
+#
+# @wrap function Z3_mk_or(c::Z3_context,num_args::Uint32,args::Ptr{Z3_ast})
+#     ccall((:Z3_mk_or,"libz3"),Z3_ast,(Z3_context,Uint32,Ptr{Z3_ast}),c,num_args,args)
+# end
+#
+# @wrap function Z3_mk_add(c::Z3_context,num_args::Uint32,args::Ptr{Z3_ast})
+#     ccall((:Z3_mk_add,"libz3"),Z3_ast,(Z3_context,Uint32,Ptr{Z3_ast}),c,num_args,args)
+# end
+#
+# @wrap function Z3_mk_mul(c::Z3_context,num_args::Uint32,args::Ptr{Z3_ast})
+#     ccall((:Z3_mk_mul,"libz3"),Z3_ast,(Z3_context,Uint32,Ptr{Z3_ast}),c,num_args,args)
+# end
+#
+# @wrap function Z3_mk_sub(c::Z3_context,num_args::Uint32,args::Ptr{Z3_ast})
+#     ccall((:Z3_mk_sub,"libz3"),Z3_ast,(Z3_context,Uint32,Ptr{Z3_ast}),c,num_args,args)
+# end
+#
+# @wrap function Z3_mk_unary_minus(c::Z3_context,arg::Z3_ast)
+#     ccall((:Z3_mk_unary_minus,"libz3"),Z3_ast,(Z3_context,Z3_ast),c,arg)
+# end
+#
+# @wrap function Z3_mk_div(c::Z3_context,arg1::Z3_ast,arg2::Z3_ast)
+#     ccall((:Z3_mk_div,"libz3"),Z3_ast,(Z3_context,Z3_ast,Z3_ast),c,arg1,arg2)
+# end
+#
+# @wrap function Z3_mk_mod(c::Z3_context,arg1::Z3_ast,arg2::Z3_ast)
+#     ccall((:Z3_mk_mod,"libz3"),Z3_ast,(Z3_context,Z3_ast,Z3_ast),c,arg1,arg2)
+# end
+#
+# @wrap function Z3_mk_rem(c::Z3_context,arg1::Z3_ast,arg2::Z3_ast)
+#     ccall((:Z3_mk_rem,"libz3"),Z3_ast,(Z3_context,Z3_ast,Z3_ast),c,arg1,arg2)
+# end
+#
+# @wrap function Z3_mk_power(c::Z3_context,arg1::Z3_ast,arg2::Z3_ast)
+#     ccall((:Z3_mk_power,"libz3"),Z3_ast,(Z3_context,Z3_ast,Z3_ast),c,arg1,arg2)
+# end
+#
+# @wrap function Z3_mk_lt(c::Z3_context,t1::Z3_ast,t2::Z3_ast)
+#     ccall((:Z3_mk_lt,"libz3"),Z3_ast,(Z3_context,Z3_ast,Z3_ast),c,t1,t2)
+# end
+#
+# @wrap function Z3_mk_le(c::Z3_context,t1::Z3_ast,t2::Z3_ast)
+#     ccall((:Z3_mk_le,"libz3"),Z3_ast,(Z3_context,Z3_ast,Z3_ast),c,t1,t2)
+# end
+#
+# @wrap function Z3_mk_gt(c::Z3_context,t1::Z3_ast,t2::Z3_ast)
+#     ccall((:Z3_mk_gt,"libz3"),Z3_ast,(Z3_context,Z3_ast,Z3_ast),c,t1,t2)
+# end
+#
+# @wrap function Z3_mk_ge(c::Z3_context,t1::Z3_ast,t2::Z3_ast)
+#     ccall((:Z3_mk_ge,"libz3"),Z3_ast,(Z3_context,Z3_ast,Z3_ast),c,t1,t2)
+# end
+#
+# @wrap function Z3_mk_int2real(c::Z3_context,t1::Z3_ast)
+#     ccall((:Z3_mk_int2real,"libz3"),Z3_ast,(Z3_context,Z3_ast),c,t1)
+# end
+#
+# @wrap function Z3_mk_real2int(c::Z3_context,t1::Z3_ast)
+#     ccall((:Z3_mk_real2int,"libz3"),Z3_ast,(Z3_context,Z3_ast),c,t1)
+# end
+#
+# @wrap function Z3_mk_is_int(c::Z3_context,t1::Z3_ast)
+#     ccall((:Z3_mk_is_int,"libz3"),Z3_ast,(Z3_context,Z3_ast),c,t1)
 # end

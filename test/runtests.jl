@@ -1,5 +1,6 @@
 tests = ["simple",
-         "findmodel"]
+         "findmodel",
+         "numerals"]
 
 println("Running tests:")
 

@@ -193,7 +193,7 @@ type UnknownAst
   ptr::Z3_ast
 end
 
-AbstractAst = Union(Ast, AppAst, VarAst, RealVarAst, QuantifierAst, SortAst, FuncDeclAst, UnknownAst)
+AbstractAst = Union(Ast, AppAst, VarAst, RealVarAst, QuantifierAst, SortAst, FuncDeclAst, NumeralAst, UnknownAst)
 convert(::Type{AbstractAst}, x::Ptr{Void}) = Ast(x)
 convert{T <: AbstractAst}(::Type{Ptr{Void}}, x::T) = x.ptr
 
