@@ -51,13 +51,6 @@ function mk_var(ctx::Z3_context, name::ASCIIString, ty::Z3_sort)
   return Z3_mk_const(ctx, s, ty)
 end
 
-## Constructing Sorts
-## =================
-mk_sort(::Type{Bool}) = Z3_mk_bool_sort
-mk_sort(::Type{Real}) = Z3_mk_real_sort
-mk_sort(::Type{Integer}) = Z3_mk_int_sort
-
-
 ## Make variables
 ## ==============
 "Create a boolean variable using the given name"

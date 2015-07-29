@@ -119,17 +119,83 @@ type Context <: Z3CType ptr::ContextPtr end
 type FuncDecl <: Z3CType ptr::FuncDeclPtr end
 
 ## Ast types
+# The issues with ASTS:
+# We want ASTs to be interoperable with existing functions, such that
+# if someone has written f(x::Number) they can use f with a variable of numerical type
+# OTOH we like f(x::ArrayAst) to cause an error
+
+# On the other hand we would like some functions, in particular these low level
+# wrapperst to accept only ASTS (and not numbers).
+
+# Also for asts which represent variables we have a sort/type that we want
+# represented in the type of the variable.
+
+# Lastly there are expressions of different type that we would like to be
+# subtypes of different types of real, e.g an Integer is not a type of Floating.
+
+# Solution
+# - CCall AST files return (UnknownAst / Ast)
+# - VarAst{T <: MathNumber}, e.g. Var{Real} is not right because you can make a variable of any sort, including tuple and array nad mayve defined ine there
+# VarAst{T <: Sort} <: .. Then we can't write functions
+
+# NumericalVarAst{T <: MathNumber} <: Real -- What about Integer
+
+## AST Solution
+# 1. Make them all subset of the Real
+# 2. Make them subset of individual type and use unions to group them
+
 typealias MathNumber Union(Real, Integer, Bool)
 
 type Ast <: Z3CType ptr::AstPtr end
-# AST = Union(Ast, Ex)
-"Convenience type representing a variable"
-type Ex{T <: MathNumber} <: Real
-  ptr::Ptr{Void}
+
+"numeral constants"
+type NumeralAst{T <: MathNumber} <: Real
+  ptr::Z3_ast
 end
-AbstractAst = Union(Ast, Ex)
+
+"(fuction?) application"
+type AppAst{T} <: Real
+  ptr::Z3_ast
+end
+
+"(fuction?) application resulting in real valued variable"
+type RealAppAst{T <: MathNumber} <: Real
+  ptr::Z3_ast
+end
+
+"bound variables of type `T`"
+type VarAst{T}
+  ptr::Z3_ast
+end
+
+"Real Valued Variable of numeric type `T`"
+type RealVarAst{T <: MathNumber} <: Real
+  ptr::Z3_ast
+end
+
+"quantifiers"
+type QuantifierAst
+  ptr::Z3_ast
+end
+
+"sort"
+type SortAst
+  ptr::Z3_ast
+end
+
+"function declaration"
+type FuncDeclAst
+  ptr::Z3_ast
+end
+
+"internal"
+type UnknownAst
+  ptr::Z3_ast
+end
+
+AbstractAst = Union(Ast, AppAst, VarAst, RealVarAst, QuantifierAst, SortAst, FuncDeclAst, UnknownAst)
 convert(::Type{AbstractAst}, x::Ptr{Void}) = Ast(x)
-convert(::Type{Ptr{Void}}, x::Ex) = x.ptr
+convert{T <: AbstractAst}(::Type{Ptr{Void}}, x::T) = x.ptr
 
 type App <: Z3CType ptr::AppPtr end
 type Pattern <: Z3CType ptr::PatternPtr end
@@ -2613,7 +2679,7 @@ end
     ccall((:Z3_get_model_func_entry_value,"libz3"),Z3_ast,(Z3_context,Z3_model,Uint32,Uint32),c,m,i,j)
 end
 
-#Fix me macro is making this eval so its clashing with Julia eval, have a better way to parse 
+#Fix me macro is making this eval so its clashing with Julia eval, have a better way to parse
 @wrap function Z3_z3eval(c::Z3_context,m::Z3_model,t::Z3_ast,v::Ptr{Z3_ast})
     ccall((:Z3_eval,"libz3"),Z3_bool,(Z3_context,Z3_model,Z3_ast,Ptr{Z3_ast}),c,m,t,v)
 end

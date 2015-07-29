@@ -15,7 +15,8 @@ include("wrap.jl")
 include("sorts.jl")
 include("logic.jl")
 include("context.jl")
-include("expression.jl")
+include("ast.jl")
+include("numerals.jl")
 
 # include("helpers.jl")
 

@@ -3,31 +3,11 @@
 # abstract syntax tree node. That is, the data-structure used in Z3 to represent
 # terms, formulas and types.
 
-# typealias MathNumber Union(Real, Integer, Bool)
-
-# The different kinds of Z3 AST (abstract syntax trees). That is, terms, formulas and types.
-#
-# Z3_APP_AST: constant and applications
-# Z3_NUMERAL_AST: numeral constants
-# Z3_VAR_AST: bound variables
-# Z3_QUANTIFIER_AST: quantifiers
-# Z3_SORT_AST: sort
-# Z3_FUNC_DECL_AST: function declaration
-# Z3_UNKNOWN_AST: internal
-
-# AbstractAst = Union(Ast, Ex)
-#
-# # AST = Union(Ast, Ex)
-# "Convenience type representing a variable"
-# type Ex{T <: MathNumber} <: Real
-#   ptr::Ptr{Void}
-# end
-
 function Var{T<: MathNumber}(::Type{T};
                           name::ASCIIString = genvar(),
                           ctx::Context = global_context())
   # safe_add!(name, ctx)
-  Ex{T}(mk_var(T, ctx, name))
+  RealVarAst{T}(mk_var(T, ctx, name))
 end
 
 ## Constructing Sorts
