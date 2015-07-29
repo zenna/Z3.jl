@@ -235,7 +235,9 @@ type FixedpointReduceAppCallbackFptr <: Z3CType ptr::FixedpointReduceAppCallback
 
 convert(::Type{Ptr{Void}}, x::Z3CType) = x.ptr
 convert(::Type{Z3_string}, x::ASCIIString) = pointer(x)
-convert(::Type{Ptr{Z3_ast}}, x::Vector{Ast}) = pointer(Ptr{Void}[a.ptr for a in x])
+
+#FIME: Vector is too loose of a type, should be Vector{T<:AbstractAst}
+convert(::Type{Ptr{Z3_ast}}, x::Vector) = pointer(Ptr{Void}[a.ptr for a in x])
 convert{T<:Z3CType}(::Type{T}, x::Ptr{Void}) = T(x)
 
 ## Enums
@@ -543,7 +545,7 @@ function convert_typ(typ::Union(Symbol, Expr))
   if typ == :(Z3_string)
     :ASCIIString
   elseif typ == :(Ptr{Z3_ast})
-    :(Vector{Ast})
+    :(Vector)
   elseif haskey(z3tojulia, typ)
     z3tojulia[typ]
   else

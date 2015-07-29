@@ -54,7 +54,11 @@ Context() = mk_context()
 
 create_global_ctx() =
   (global default_global_context; default_global_context = Context())
-global_context() = (global default_global_context; default_global_context)
+
+function global_context()
+  # error("global_context_disabled")
+  (global default_global_context; default_global_context)
+end
 
 function set_global_ctx(ctx::Context)
   global default_global_context

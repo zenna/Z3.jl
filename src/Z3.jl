@@ -2,6 +2,7 @@ module Z3
 
 using Compat
 import Base:convert
+import Base:rem,ifelse
 # Load shared libs
 try
   @compat Libdl.dlopen(joinpath("libz3.so"), Libdl.RTLD_LAZY|Libdl.RTLD_DEEPBIND|Libdl.RTLD_GLOBAL)
@@ -20,7 +21,11 @@ include("numerals.jl")
 
 # include("helpers.jl")
 
-export Var
+export Var,
+
+  distinct,
+  is_int,
+  biimplies
 
 create_global_ctx()
 

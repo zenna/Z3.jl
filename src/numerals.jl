@@ -1,6 +1,8 @@
 ## Numerals - Construct numerals
 ## =============================
 
+# TODO: Add support for all leaf types
+
 ## Constructing Sorts
 ## =================
 mk_num(::Type{Bool}) = mk_bool
