@@ -233,12 +233,17 @@ type Z3Bool <: Z3CType ptr::Z3BoolPtr end
 type FixedpointReduceAssignCallbackFptr <: Z3CType ptr::FixedpointReduceAssignCallbackFptrPtr end
 type FixedpointReduceAppCallbackFptr <: Z3CType ptr::FixedpointReduceAppCallbackFptrPtr end
 
+## arg/return type Conversion
+## ==========================
+
 convert(::Type{Ptr{Void}}, x::Z3CType) = x.ptr
 convert(::Type{Z3_string}, x::ASCIIString) = pointer(x)
+
 
 #FIME: Vector is too loose of a type, should be Vector{T<:AbstractAst}
 convert(::Type{Ptr{Z3_ast}}, x::Vector) = pointer(Ptr{Void}[a.ptr for a in x])
 convert{T<:Z3CType}(::Type{T}, x::Ptr{Void}) = T(x)
+convert(::Type{ASCIIString}, x::Z3_string) = bytestring(x)
 
 ## Enums
 ## =====

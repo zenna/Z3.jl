@@ -18,15 +18,75 @@ include("logic.jl")
 include("context.jl")
 include("ast.jl")
 include("numerals.jl")
+include("solver.jl")
 
-# include("helpers.jl")
+include("auxiliary.jl")
 
 export Var,
-
   distinct,
   is_int,
   biimplies
 
-create_global_ctx()
+#Z3 Types
+export  UnknownSort,
+  UninterpretedSort,
+  BoolSort,
+  IntSort,
+  RealSort,
+  BitVectorSort,
+  FiniteDomainSort,
+  ArraySort,
+  TupleSort,
+  EnumerationSort,
+  ListSort,
+  Z3Symbol,
+  Literals,
+  Theory,
+  Config,
+  Context,
+  FuncDecl,
+  Ast,
+  NumeralAst,
+  AppAst,
+  RealAppAst,
+  VarAst,
+  RealVarAst,
+  QuantifierAst,
+  SortAst,
+  FuncDeclAst,
+  UnknownAst,
+  App,
+  Pattern,
+  Model,
+  Constructor,
+  ConstructorList,
+  Params,
+  ParamDescrs,
+  Goal,
+  Tactic,
+  Probe,
+  Stats,
+  Solver,
+  AstVector,
+  AstMap,
+  ApplyResult,
+  FuncInterp,
+  FuncEntry,
+  Fixedpoint,
+  RcfNum,
+  TheoryData,
+  ReduceEqCallbackFptr,
+  ReduceAppCallbackFptr,
+  ReduceDistinctCallbackFptr,
+  TheoryCallbackFptr,
+  TheoryFinalCheckCallbackFptr,
+  TheoryAstBoolCallbackFptr,
+  TheoryAstAstCallbackFptr,
+  TheoryAstCallbackFptr,
+  Z3Bool,
+  FixedpointReduceAssignCallbackFptr,
+  FixedpointReduceAppCallbackFptr
+
+# create_global_ctx()
 
 end
