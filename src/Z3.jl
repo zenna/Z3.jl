@@ -26,7 +26,9 @@ include("auxiliary.jl")
 export Var,
   distinct,
   is_int,
-  biimplies
+  biimplies,
+  add!,
+  model
 
 #Z3 Types
 export  UnknownSort,
@@ -89,5 +91,6 @@ export  UnknownSort,
   FixedpointReduceAppCallbackFptr
 
 create_global_ctx()
+create_global_solver()
 
 end
