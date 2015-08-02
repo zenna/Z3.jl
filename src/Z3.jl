@@ -19,6 +19,7 @@ include("context.jl")
 include("ast.jl")
 include("numerals.jl")
 include("solver.jl")
+include("accessor.jl")
 
 include("auxiliary.jl")
 
@@ -87,6 +88,6 @@ export  UnknownSort,
   FixedpointReduceAssignCallbackFptr,
   FixedpointReduceAppCallbackFptr
 
-# create_global_ctx()
+create_global_ctx()
 
 end

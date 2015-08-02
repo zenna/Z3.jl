@@ -1,8 +1,7 @@
 # Z3.jl
 
-[![Build Status](https://travis-ci.org/zenna/z3.jl.svg?branch=master)](https://travis-ci.org/zenna/Z3.jl)
+[![Build Status](https://travis-ci.org/zenna/Z3.jl.svg?branch=master)](https://travis-ci.org/zenna/Z3.jl)
 
-Z3 is a high performance theorem prover developed at Microsoft Researcher.
-This is a Julia wrapper for that library.
+This is a Julia interface to Z3 - a high performance theorem prover developed at Microsoft Research.
 
 Z3 can solve satisfiability problems.

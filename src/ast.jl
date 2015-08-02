@@ -6,7 +6,7 @@ function Var{T<: MathNumber}(::Type{T};
                           name::ASCIIString = genvar(),
                           ctx::Context = global_context())
   # safe_add!(name, ctx)
-  RealVarAst{T}(mk_var(T, ctx, name))
+  RealVarAst{T}(mk_var(T, ctx, name),0)
 end
 
 ## Constructing Sorts
@@ -73,8 +73,7 @@ LeafReal = Union(LeafFloat, LeafInteger, Rational)
 to_real(x::IntegerAst; ctx::Context=global_context()) = AppAst{Real}(mk_int2real(ctx, x))
 to_int(x::RealAst; ctx::Context=global_context()) = AppAst{Integer}(mk_real2int(ctx, x))
 
-real_real_bool = @compat Dict(:(>=) => mk_ge, :(>) => mk_gt,
-  :(<=) => mk_le, :(<) => mk_lt, :(==) => mk_eq)
+real_real_bool = @compat Dict(:(>=) => mk_ge, :(>) => mk_gt,:(<=) => mk_le, :(<) => mk_lt, :(==) => mk_eq)
 
 ## Real × Real -> Bool
 for (op,func) in real_real_bool
