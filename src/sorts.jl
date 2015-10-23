@@ -12,13 +12,13 @@ RealSort(;ctx::Context=global_context()) = IntSort(mk_real_sort(ctx))
 convert{T <: Sort}(::Type{T}, x::UnknownSort) = T(x.ptr)
 
 ## Sort <-> Julia Type
-sorttype(::Union(Type{BoolSort},BoolSort)) = Bool
-sorttype(::Union(Type{RealSort},RealSort)) = Real
-sorttype(::Union(Type{IntSort},IntSort)) = Integer
+sorttype(::Union{Type{BoolSort},BoolSort}) = Bool
+sorttype(::Union{Type{RealSort},RealSort}) = Real
+sorttype(::Union{Type{IntSort},IntSort}) = Integer
 
 ## Sort Groups
 ## ===========
-typealias NumberSort Union(RealSort, IntSort, BitVectorSort, FiniteDomainSort)
-typealias IntegerSort Union(IntSort, BitVectorSort, FiniteDomainSort)
-typealias NumberTypes Union(Integer, Real, BitVector) #FIXME addd finite domain
-typealias IntegerTypes Union(Integer, BitVector) #FIXME add finitedomain
+typealias NumberSort Union{RealSort, IntSort, BitVectorSort, FiniteDomainSort}
+typealias IntegerSort Union{IntSort, BitVectorSort, FiniteDomainSort}
+typealias NumberTypes Union{Integer, Real, BitVector} #FIXME addd finite domain
+typealias IntegerTypes Union{Integer, BitVector} #FIXME add finitedomain

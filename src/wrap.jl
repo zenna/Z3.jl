@@ -43,8 +43,8 @@ typealias Z3_error_handler Ptr{Void}
 typealias Z3_fixedpoint_reduce_assign_callback_fptr Ptr{Void}
 typealias Z3_fixedpoint_reduce_app_callback_fptr Ptr{Void}
 
-typealias Z3_string Ptr{Uint8}
-typealias Z3_string_ptr Ptr{Ptr{Uint8}}
+typealias Z3_string Ptr{UInt8}
+typealias Z3_string_ptr Ptr{Ptr{UInt8}}
 typealias Z3_bool Cint
 typealias Z3Bool Cint
 
@@ -145,7 +145,7 @@ type FuncDecl <: Z3CType ptr::FuncDeclPtr end
 # 1. Make them all subset of the Real
 # 2. Make them subset of individual type and use unions to group them
 
-typealias MathNumber Union(Real, Integer, Bool)
+typealias MathNumber Union{Real, Integer, Bool}
 
 type Ast <: Z3CType ptr::AstPtr end
 
@@ -195,7 +195,7 @@ type UnknownAst
   ptr::Z3_ast
 end
 
-AbstractAst = Union(Ast, AppAst, VarAst, RealVarAst, QuantifierAst, SortAst, FuncDeclAst, NumeralAst, UnknownAst)
+AbstractAst = Union{Ast, AppAst, VarAst, RealVarAst, QuantifierAst, SortAst, FuncDeclAst, NumeralAst, UnknownAst}
 convert(::Type{AbstractAst}, x::Ptr{Void}) = Ast(x)
 convert{T <: AbstractAst}(::Type{Ptr{Void}}, x::T) = x.ptr
 convert{T <: AbstractAst}(::Type{T}, x::AbstractAst) = T(x.ptr)
@@ -506,7 +506,7 @@ convert(::Type{ASCIIString}, x::Z3_string) = bytestring(x)
 
 ## Macros
 ## ======
-z3tojulia = Dict(:Z3_symbol => :Z3Symbol,
+z3tojulia = Dict{Symbol, Symbol}(:Z3_symbol => :Z3Symbol,
             :Z3_literals => :Literals,
             :Z3_theory => :Theory,
             :Z3_config => :Config,
@@ -551,7 +551,7 @@ arg_name(arg::Expr) = arg.args[1]::Symbol
 arg_type(arg::Expr) = arg.args[2]
 
 "Maps Z3 typealias symbols to corresponding Julia types"
-function convert_typ(typ::Union(Symbol, Expr))
+function convert_typ(typ::Union{Symbol, Expr})
   if typ == :(Z3_string)
     :ASCIIString
   elseif typ == :(Ptr{Z3_ast})
@@ -583,7 +583,7 @@ macro wrap(func_def)
   # FIXME: finding return_type in this way is very brittle
   return_type = func_def.args[2].args[2].args[2]
   name = func_def.args[1].args[1]
-  short_name = symbol(string(name)[4:end])
+  @compat short_name = Symbol(string(name)[4:end])
   func_args = func_def.args[1].args[2:end]
 
   new_return_typ = convert_typ(return_type)
@@ -687,12 +687,12 @@ end
     ccall((:Z3_params_set_bool,"libz3"),Void,(Z3_context,Z3_params,Z3_symbol,Z3_bool),ctx,p,k,v)
 end
 
-@wrap function Z3_params_set_uint(ctx::Z3_context,p::Z3_params,k::Z3_symbol,v::Uint32)
-    ccall((:Z3_params_set_uint,"libz3"),Void,(Z3_context,Z3_params,Z3_symbol,Uint32),ctx,p,k,v)
+@wrap function Z3_params_set_uint(ctx::Z3_context,p::Z3_params,k::Z3_symbol,v::UInt32)
+    ccall((:Z3_params_set_uint,"libz3"),Void,(Z3_context,Z3_params,Z3_symbol,UInt32),ctx,p,k,v)
 end
 
 @wrap function Z3_params_set_double(ctx::Z3_context,p::Z3_params,k::Z3_symbol,v::Cdouble)
-    ccall((:Z3_params_set_double,"libz3"),Void,(Z3_context,Z3_params,Z3_symbol,ctxdouble),ctx,p,k,v)
+    ccall((:Z3_params_set_double,"libz3"),Void,(Z3_context,Z3_params,Z3_symbol,Cdouble),ctx,p,k,v)
 end
 
 @wrap function Z3_params_set_symbol(ctx::Z3_context,p::Z3_params,k::Z3_symbol,v::Z3_symbol)
@@ -720,11 +720,11 @@ end
 end
 
 @wrap function Z3_param_descrs_size(ctx::Z3_context,p::Z3_param_descrs)
-    ccall((:Z3_param_descrs_size,"libz3"),Uint32,(Z3_context,Z3_param_descrs),ctx,p)
+    ccall((:Z3_param_descrs_size,"libz3"),UInt32,(Z3_context,Z3_param_descrs),ctx,p)
 end
 
-@wrap function Z3_param_descrs_get_name(ctx::Z3_context,p::Z3_param_descrs,i::Uint32)
-    ccall((:Z3_param_descrs_get_name,"libz3"),Z3_symbol,(Z3_context,Z3_param_descrs,Uint32),ctx,p,i)
+@wrap function Z3_param_descrs_get_name(ctx::Z3_context,p::Z3_param_descrs,i::UInt32)
+    ccall((:Z3_param_descrs_get_name,"libz3"),Z3_symbol,(Z3_context,Z3_param_descrs,UInt32),ctx,p,i)
 end
 
 @wrap function Z3_param_descrs_to_string(ctx::Z3_context,p::Z3_param_descrs)
@@ -755,72 +755,72 @@ end
     ccall((:Z3_mk_real_sort,"libz3"),Z3_sort,(Z3_context,),ctx)
 end
 
-@wrap function Z3_mk_bv_sort(ctx::Z3_context,sz::Uint32)
-    ccall((:Z3_mk_bv_sort,"libz3"),Z3_sort,(Z3_context,Uint32),ctx,sz)
+@wrap function Z3_mk_bv_sort(ctx::Z3_context,sz::UInt32)
+    ccall((:Z3_mk_bv_sort,"libz3"),Z3_sort,(Z3_context,UInt32),ctx,sz)
 end
 
 @wrap function Z3_mk_finite_domain_sort(ctx::Z3_context,name::Z3_symbol,size::Culonglong)
-    ccall((:Z3_mk_finite_domain_sort,"libz3"),Z3_sort,(Z3_context,Z3_symbol,ctxulonglong),ctx,name,size)
+    ccall((:Z3_mk_finite_domain_sort,"libz3"),Z3_sort,(Z3_context,Z3_symbol,Culonglong),ctx,name,size)
 end
 
 @wrap function Z3_mk_array_sort(ctx::Z3_context,domain::Z3_sort,range::Z3_sort)
     ccall((:Z3_mk_array_sort,"libz3"),Z3_sort,(Z3_context,Z3_sort,Z3_sort),ctx,domain,range)
 end
 
-@wrap function Z3_mk_tuple_sort(ctx::Z3_context,mk_tuple_name::Z3_symbol,num_fields::Uint32,field_names::Ptr{Z3_symbol},field_sorts::Ptr{Z3_sort},mk_tuple_decl::Ptr{Z3_func_decl},proj_decl::Ptr{Z3_func_decl})
-    ccall((:Z3_mk_tuple_sort,"libz3"),Z3_sort,(Z3_context,Z3_symbol,Uint32,Ptr{Z3_symbol},Ptr{Z3_sort},Ptr{Z3_func_decl},Ptr{Z3_func_decl}),ctx,mk_tuple_name,num_fields,field_names,field_sorts,mk_tuple_decl,proj_decl)
+@wrap function Z3_mk_tuple_sort(ctx::Z3_context,mk_tuple_name::Z3_symbol,num_fields::UInt32,field_names::Ptr{Z3_symbol},field_sorts::Ptr{Z3_sort},mk_tuple_decl::Ptr{Z3_func_decl},proj_decl::Ptr{Z3_func_decl})
+    ccall((:Z3_mk_tuple_sort,"libz3"),Z3_sort,(Z3_context,Z3_symbol,UInt32,Ptr{Z3_symbol},Ptr{Z3_sort},Ptr{Z3_func_decl},Ptr{Z3_func_decl}),ctx,mk_tuple_name,num_fields,field_names,field_sorts,mk_tuple_decl,proj_decl)
 end
 
-@wrap function Z3_mk_enumeration_sort(ctx::Z3_context,name::Z3_symbol,n::Uint32,enum_names::Ptr{Z3_symbol},enum_consts::Ptr{Z3_func_decl},enum_testers::Ptr{Z3_func_decl})
-    ccall((:Z3_mk_enumeration_sort,"libz3"),Z3_sort,(Z3_context,Z3_symbol,Uint32,Ptr{Z3_symbol},Ptr{Z3_func_decl},Ptr{Z3_func_decl}),ctx,name,n,enum_names,enum_consts,enum_testers)
+@wrap function Z3_mk_enumeration_sort(ctx::Z3_context,name::Z3_symbol,n::UInt32,enum_names::Ptr{Z3_symbol},enum_consts::Ptr{Z3_func_decl},enum_testers::Ptr{Z3_func_decl})
+    ccall((:Z3_mk_enumeration_sort,"libz3"),Z3_sort,(Z3_context,Z3_symbol,UInt32,Ptr{Z3_symbol},Ptr{Z3_func_decl},Ptr{Z3_func_decl}),ctx,name,n,enum_names,enum_consts,enum_testers)
 end
 
 @wrap function Z3_mk_list_sort(ctx::Z3_context,name::Z3_symbol,elem_sort::Z3_sort,nil_decl::Ptr{Z3_func_decl},is_nil_decl::Ptr{Z3_func_decl},ctxons_decl::Ptr{Z3_func_decl},is_cons_decl::Ptr{Z3_func_decl},head_decl::Ptr{Z3_func_decl},tail_decl::Ptr{Z3_func_decl})
     ccall((:Z3_mk_list_sort,"libz3"),Z3_sort,(Z3_context,Z3_symbol,Z3_sort,Ptr{Z3_func_decl},Ptr{Z3_func_decl},Ptr{Z3_func_decl},Ptr{Z3_func_decl},Ptr{Z3_func_decl},Ptr{Z3_func_decl}),ctx,name,elem_sort,nil_decl,is_nil_decl,ctxons_decl,is_cons_decl,head_decl,tail_decl)
 end
 
-@wrap function Z3_mk_constructor(ctx::Z3_context,name::Z3_symbol,recognizer::Z3_symbol,num_fields::Uint32,field_names::Ptr{Z3_symbol},sorts::Ptr{Z3_sort},sort_refs::Ref{Uint32})
-    ccall((:Z3_mk_constructor,"libz3"),Z3_constructor,(Z3_context,Z3_symbol,Z3_symbol,Uint32,Ptr{Z3_symbol},Ptr{Z3_sort},Ref{Uint32}),ctx,name,recognizer,num_fields,field_names,sorts,sort_refs)
+@wrap function Z3_mk_constructor(ctx::Z3_context,name::Z3_symbol,recognizer::Z3_symbol,num_fields::UInt32,field_names::Ptr{Z3_symbol},sorts::Ptr{Z3_sort},sort_refs::Ref{UInt32})
+    ccall((:Z3_mk_constructor,"libz3"),Z3_constructor,(Z3_context,Z3_symbol,Z3_symbol,UInt32,Ptr{Z3_symbol},Ptr{Z3_sort},Ref{UInt32}),ctx,name,recognizer,num_fields,field_names,sorts,sort_refs)
 end
 
 @wrap function Z3_del_constructor(ctx::Z3_context,ctxonstr::Z3_constructor)
     ccall((:Z3_del_constructor,"libz3"),Void,(Z3_context,Z3_constructor),ctx,ctxonstr)
 end
 
-@wrap function Z3_mk_datatype(ctx::Z3_context,name::Z3_symbol,num_constructors::Uint32,ctxonstructors::Ptr{Z3_constructor})
-    ccall((:Z3_mk_datatype,"libz3"),Z3_sort,(Z3_context,Z3_symbol,Uint32,Ptr{Z3_constructor}),ctx,name,num_constructors,ctxonstructors)
+@wrap function Z3_mk_datatype(ctx::Z3_context,name::Z3_symbol,num_constructors::UInt32,ctxonstructors::Ptr{Z3_constructor})
+    ccall((:Z3_mk_datatype,"libz3"),Z3_sort,(Z3_context,Z3_symbol,UInt32,Ptr{Z3_constructor}),ctx,name,num_constructors,ctxonstructors)
 end
 
-@wrap function Z3_mk_constructor_list(ctx::Z3_context,num_constructors::Uint32,ctxonstructors::Ptr{Z3_constructor})
-    ccall((:Z3_mk_constructor_list,"libz3"),Z3_constructor_list,(Z3_context,Uint32,Ptr{Z3_constructor}),ctx,num_constructors,ctxonstructors)
+@wrap function Z3_mk_constructor_list(ctx::Z3_context,num_constructors::UInt32,ctxonstructors::Ptr{Z3_constructor})
+    ccall((:Z3_mk_constructor_list,"libz3"),Z3_constructor_list,(Z3_context,UInt32,Ptr{Z3_constructor}),ctx,num_constructors,ctxonstructors)
 end
 
 @wrap function Z3_del_constructor_list(ctx::Z3_context,ctxlist::Z3_constructor_list)
     ccall((:Z3_del_constructor_list,"libz3"),Void,(Z3_context,Z3_constructor_list),ctx,ctxlist)
 end
 
-@wrap function Z3_mk_datatypes(ctx::Z3_context,num_sorts::Uint32,sort_names::Ptr{Z3_symbol},sorts::Ptr{Z3_sort},ctxonstructor_lists::Ptr{Z3_constructor_list})
-    ccall((:Z3_mk_datatypes,"libz3"),Void,(Z3_context,Uint32,Ptr{Z3_symbol},Ptr{Z3_sort},Ptr{Z3_constructor_list}),ctx,num_sorts,sort_names,sorts,ctxonstructor_lists)
+@wrap function Z3_mk_datatypes(ctx::Z3_context,num_sorts::UInt32,sort_names::Ptr{Z3_symbol},sorts::Ptr{Z3_sort},ctxonstructor_lists::Ptr{Z3_constructor_list})
+    ccall((:Z3_mk_datatypes,"libz3"),Void,(Z3_context,UInt32,Ptr{Z3_symbol},Ptr{Z3_sort},Ptr{Z3_constructor_list}),ctx,num_sorts,sort_names,sorts,ctxonstructor_lists)
 end
 
-@wrap function Z3_query_constructor(ctx::Z3_context,ctxonstr::Z3_constructor,num_fields::Uint32,ctxonstructor::Ptr{Z3_func_decl},tester::Ptr{Z3_func_decl},accessors::Ptr{Z3_func_decl})
-    ccall((:Z3_query_constructor,"libz3"),Void,(Z3_context,Z3_constructor,Uint32,Ptr{Z3_func_decl},Ptr{Z3_func_decl},Ptr{Z3_func_decl}),ctx,ctxonstr,num_fields,ctxonstructor,tester,accessors)
+@wrap function Z3_query_constructor(ctx::Z3_context,ctxonstr::Z3_constructor,num_fields::UInt32,ctxonstructor::Ptr{Z3_func_decl},tester::Ptr{Z3_func_decl},accessors::Ptr{Z3_func_decl})
+    ccall((:Z3_query_constructor,"libz3"),Void,(Z3_context,Z3_constructor,UInt32,Ptr{Z3_func_decl},Ptr{Z3_func_decl},Ptr{Z3_func_decl}),ctx,ctxonstr,num_fields,ctxonstructor,tester,accessors)
 end
 
-@wrap function Z3_mk_func_decl(ctx::Z3_context,s::Z3_symbol,domain_size::Uint32,domain::Ptr{Z3_sort},range::Z3_sort)
-    ccall((:Z3_mk_func_decl,"libz3"),Z3_func_decl,(Z3_context,Z3_symbol,Uint32,Ptr{Z3_sort},Z3_sort),ctx,s,domain_size,domain,range)
+@wrap function Z3_mk_func_decl(ctx::Z3_context,s::Z3_symbol,domain_size::UInt32,domain::Ptr{Z3_sort},range::Z3_sort)
+    ccall((:Z3_mk_func_decl,"libz3"),Z3_func_decl,(Z3_context,Z3_symbol,UInt32,Ptr{Z3_sort},Z3_sort),ctx,s,domain_size,domain,range)
 end
 
-@wrap function Z3_mk_app(ctx::Z3_context,d::Z3_func_decl,num_args::Uint32,args::Ptr{Z3_ast})
-    ccall((:Z3_mk_app,"libz3"),Z3_ast,(Z3_context,Z3_func_decl,Uint32,Ptr{Z3_ast}),ctx,d,num_args,args)
+@wrap function Z3_mk_app(ctx::Z3_context,d::Z3_func_decl,num_args::UInt32,args::Ptr{Z3_ast})
+    ccall((:Z3_mk_app,"libz3"),Z3_ast,(Z3_context,Z3_func_decl,UInt32,Ptr{Z3_ast}),ctx,d,num_args,args)
 end
 
 @wrap function Z3_mk_const(ctx::Z3_context,s::Z3_symbol,ty::Z3_sort)
     ccall((:Z3_mk_const,"libz3"),Z3_ast,(Z3_context,Z3_symbol,Z3_sort),ctx,s,ty)
 end
 
-@wrap function Z3_mk_fresh_func_decl(ctx::Z3_context,prefix::Z3_string,domain_size::Uint32,domain::Ptr{Z3_sort},range::Z3_sort)
-    ccall((:Z3_mk_fresh_func_decl,"libz3"),Z3_func_decl,(Z3_context,Z3_string,Uint32,Ptr{Z3_sort},Z3_sort),ctx,prefix,domain_size,domain,range)
+@wrap function Z3_mk_fresh_func_decl(ctx::Z3_context,prefix::Z3_string,domain_size::UInt32,domain::Ptr{Z3_sort},range::Z3_sort)
+    ccall((:Z3_mk_fresh_func_decl,"libz3"),Z3_func_decl,(Z3_context,Z3_string,UInt32,Ptr{Z3_sort},Z3_sort),ctx,prefix,domain_size,domain,range)
 end
 
 @wrap function Z3_mk_fresh_const(ctx::Z3_context,prefix::Z3_string,ty::Z3_sort)
@@ -839,8 +839,8 @@ end
     ccall((:Z3_mk_eq,"libz3"),Z3_ast,(Z3_context,Z3_ast,Z3_ast),ctx,l,r)
 end
 
-@wrap function Z3_mk_distinct(ctx::Z3_context,num_args::Uint32,args::Ptr{Z3_ast})
-    ccall((:Z3_mk_distinct,"libz3"),Z3_ast,(Z3_context,Uint32,Ptr{Z3_ast}),ctx,num_args,args)
+@wrap function Z3_mk_distinct(ctx::Z3_context,num_args::UInt32,args::Ptr{Z3_ast})
+    ccall((:Z3_mk_distinct,"libz3"),Z3_ast,(Z3_context,UInt32,Ptr{Z3_ast}),ctx,num_args,args)
 end
 
 @wrap function Z3_mk_not(ctx::Z3_context,a::Z3_ast)
@@ -863,24 +863,24 @@ end
     ccall((:Z3_mk_xor,"libz3"),Z3_ast,(Z3_context,Z3_ast,Z3_ast),ctx,t1,t2)
 end
 
-@wrap function Z3_mk_and(ctx::Z3_context,num_args::Uint32,args::Ptr{Z3_ast})
-    ccall((:Z3_mk_and,"libz3"),Z3_ast,(Z3_context,Uint32,Ptr{Z3_ast}),ctx,num_args,args)
+@wrap function Z3_mk_and(ctx::Z3_context,num_args::UInt32,args::Ptr{Z3_ast})
+    ccall((:Z3_mk_and,"libz3"),Z3_ast,(Z3_context,UInt32,Ptr{Z3_ast}),ctx,num_args,args)
 end
 
-@wrap function Z3_mk_or(ctx::Z3_context,num_args::Uint32,args::Ptr{Z3_ast})
-    ccall((:Z3_mk_or,"libz3"),Z3_ast,(Z3_context,Uint32,Ptr{Z3_ast}),ctx,num_args,args)
+@wrap function Z3_mk_or(ctx::Z3_context,num_args::UInt32,args::Ptr{Z3_ast})
+    ccall((:Z3_mk_or,"libz3"),Z3_ast,(Z3_context,UInt32,Ptr{Z3_ast}),ctx,num_args,args)
 end
 
-@wrap function Z3_mk_add(ctx::Z3_context,num_args::Uint32,args::Ptr{Z3_ast})
-    ccall((:Z3_mk_add,"libz3"),Z3_ast,(Z3_context,Uint32,Ptr{Z3_ast}),ctx,num_args,args)
+@wrap function Z3_mk_add(ctx::Z3_context,num_args::UInt32,args::Ptr{Z3_ast})
+    ccall((:Z3_mk_add,"libz3"),Z3_ast,(Z3_context,UInt32,Ptr{Z3_ast}),ctx,num_args,args)
 end
 
-@wrap function Z3_mk_mul(ctx::Z3_context,num_args::Uint32,args::Ptr{Z3_ast})
-    ccall((:Z3_mk_mul,"libz3"),Z3_ast,(Z3_context,Uint32,Ptr{Z3_ast}),ctx,num_args,args)
+@wrap function Z3_mk_mul(ctx::Z3_context,num_args::UInt32,args::Ptr{Z3_ast})
+    ccall((:Z3_mk_mul,"libz3"),Z3_ast,(Z3_context,UInt32,Ptr{Z3_ast}),ctx,num_args,args)
 end
 
-@wrap function Z3_mk_sub(ctx::Z3_context,num_args::Uint32,args::Ptr{Z3_ast})
-    ccall((:Z3_mk_sub,"libz3"),Z3_ast,(Z3_context,Uint32,Ptr{Z3_ast}),ctx,num_args,args)
+@wrap function Z3_mk_sub(ctx::Z3_context,num_args::UInt32,args::Ptr{Z3_ast})
+    ccall((:Z3_mk_sub,"libz3"),Z3_ast,(Z3_context,UInt32,Ptr{Z3_ast}),ctx,num_args,args)
 end
 
 @wrap function Z3_mk_unary_minus(ctx::Z3_context,arg::Z3_ast)
@@ -1039,20 +1039,20 @@ end
     ccall((:Z3_mk_concat,"libz3"),Z3_ast,(Z3_context,Z3_ast,Z3_ast),ctx,t1,t2)
 end
 
-@wrap function Z3_mk_extract(ctx::Z3_context,high::Uint32,low::Uint32,t1::Z3_ast)
-    ccall((:Z3_mk_extract,"libz3"),Z3_ast,(Z3_context,Uint32,Uint32,Z3_ast),ctx,high,low,t1)
+@wrap function Z3_mk_extract(ctx::Z3_context,high::UInt32,low::UInt32,t1::Z3_ast)
+    ccall((:Z3_mk_extract,"libz3"),Z3_ast,(Z3_context,UInt32,UInt32,Z3_ast),ctx,high,low,t1)
 end
 
-@wrap function Z3_mk_sign_ext(ctx::Z3_context,i::Uint32,t1::Z3_ast)
-    ccall((:Z3_mk_sign_ext,"libz3"),Z3_ast,(Z3_context,Uint32,Z3_ast),ctx,i,t1)
+@wrap function Z3_mk_sign_ext(ctx::Z3_context,i::UInt32,t1::Z3_ast)
+    ccall((:Z3_mk_sign_ext,"libz3"),Z3_ast,(Z3_context,UInt32,Z3_ast),ctx,i,t1)
 end
 
-@wrap function Z3_mk_zero_ext(ctx::Z3_context,i::Uint32,t1::Z3_ast)
-    ccall((:Z3_mk_zero_ext,"libz3"),Z3_ast,(Z3_context,Uint32,Z3_ast),ctx,i,t1)
+@wrap function Z3_mk_zero_ext(ctx::Z3_context,i::UInt32,t1::Z3_ast)
+    ccall((:Z3_mk_zero_ext,"libz3"),Z3_ast,(Z3_context,UInt32,Z3_ast),ctx,i,t1)
 end
 
-@wrap function Z3_mk_repeat(ctx::Z3_context,i::Uint32,t1::Z3_ast)
-    ccall((:Z3_mk_repeat,"libz3"),Z3_ast,(Z3_context,Uint32,Z3_ast),ctx,i,t1)
+@wrap function Z3_mk_repeat(ctx::Z3_context,i::UInt32,t1::Z3_ast)
+    ccall((:Z3_mk_repeat,"libz3"),Z3_ast,(Z3_context,UInt32,Z3_ast),ctx,i,t1)
 end
 
 @wrap function Z3_mk_bvshl(ctx::Z3_context,t1::Z3_ast,t2::Z3_ast)
@@ -1067,12 +1067,12 @@ end
     ccall((:Z3_mk_bvashr,"libz3"),Z3_ast,(Z3_context,Z3_ast,Z3_ast),ctx,t1,t2)
 end
 
-@wrap function Z3_mk_rotate_left(ctx::Z3_context,i::Uint32,t1::Z3_ast)
-    ccall((:Z3_mk_rotate_left,"libz3"),Z3_ast,(Z3_context,Uint32,Z3_ast),ctx,i,t1)
+@wrap function Z3_mk_rotate_left(ctx::Z3_context,i::UInt32,t1::Z3_ast)
+    ccall((:Z3_mk_rotate_left,"libz3"),Z3_ast,(Z3_context,UInt32,Z3_ast),ctx,i,t1)
 end
 
-@wrap function Z3_mk_rotate_right(ctx::Z3_context,i::Uint32,t1::Z3_ast)
-    ccall((:Z3_mk_rotate_right,"libz3"),Z3_ast,(Z3_context,Uint32,Z3_ast),ctx,i,t1)
+@wrap function Z3_mk_rotate_right(ctx::Z3_context,i::UInt32,t1::Z3_ast)
+    ccall((:Z3_mk_rotate_right,"libz3"),Z3_ast,(Z3_context,UInt32,Z3_ast),ctx,i,t1)
 end
 
 @wrap function Z3_mk_ext_rotate_left(ctx::Z3_context,t1::Z3_ast,t2::Z3_ast)
@@ -1083,8 +1083,8 @@ end
     ccall((:Z3_mk_ext_rotate_right,"libz3"),Z3_ast,(Z3_context,Z3_ast,Z3_ast),ctx,t1,t2)
 end
 
-@wrap function Z3_mk_int2bv(ctx::Z3_context,n::Uint32,t1::Z3_ast)
-    ccall((:Z3_mk_int2bv,"libz3"),Z3_ast,(Z3_context,Uint32,Z3_ast),ctx,n,t1)
+@wrap function Z3_mk_int2bv(ctx::Z3_context,n::UInt32,t1::Z3_ast)
+    ccall((:Z3_mk_int2bv,"libz3"),Z3_ast,(Z3_context,UInt32,Z3_ast),ctx,n,t1)
 end
 
 @wrap function Z3_mk_bv2int(ctx::Z3_context,t1::Z3_ast,is_signed::Z3_bool)
@@ -1135,8 +1135,8 @@ end
     ccall((:Z3_mk_const_array,"libz3"),Z3_ast,(Z3_context,Z3_sort,Z3_ast),ctx,domain,v)
 end
 
-@wrap function Z3_mk_map(ctx::Z3_context,f::Z3_func_decl,n::Uint32,args::Ptr{Z3_ast})
-    ccall((:Z3_mk_map,"libz3"),Z3_ast,(Z3_context,Z3_func_decl,Uint32,Ptr{Z3_ast}),ctx,f,n,args)
+@wrap function Z3_mk_map(ctx::Z3_context,f::Z3_func_decl,n::UInt32,args::Ptr{Z3_ast})
+    ccall((:Z3_mk_map,"libz3"),Z3_ast,(Z3_context,Z3_func_decl,UInt32,Ptr{Z3_ast}),ctx,f,n,args)
 end
 
 @wrap function Z3_mk_array_default(ctx::Z3_context,array::Z3_ast)
@@ -1163,12 +1163,12 @@ end
     ccall((:Z3_mk_set_del,"libz3"),Z3_ast,(Z3_context,Z3_ast,Z3_ast),ctx,set,elem)
 end
 
-@wrap function Z3_mk_set_union(ctx::Z3_context,num_args::Uint32,args::Ptr{Z3_ast})
-    ccall((:Z3_mk_set_union,"libz3"),Z3_ast,(Z3_context,Uint32,Ptr{Z3_ast}),ctx,num_args,args)
+@wrap function Z3_mk_set_union(ctx::Z3_context,num_args::UInt32,args::Ptr{Z3_ast})
+    ccall((:Z3_mk_set_union,"libz3"),Z3_ast,(Z3_context,UInt32,Ptr{Z3_ast}),ctx,num_args,args)
 end
 
-@wrap function Z3_mk_set_intersect(ctx::Z3_context,num_args::Uint32,args::Ptr{Z3_ast})
-    ccall((:Z3_mk_set_intersect,"libz3"),Z3_ast,(Z3_context,Uint32,Ptr{Z3_ast}),ctx,num_args,args)
+@wrap function Z3_mk_set_intersect(ctx::Z3_context,num_args::UInt32,args::Ptr{Z3_ast})
+    ccall((:Z3_mk_set_intersect,"libz3"),Z3_ast,(Z3_context,UInt32,Ptr{Z3_ast}),ctx,num_args,args)
 end
 
 @wrap function Z3_mk_set_difference(ctx::Z3_context,arg1::Z3_ast,arg2::Z3_ast)
@@ -1199,8 +1199,8 @@ end
     ccall((:Z3_mk_int,"libz3"),Z3_ast,(Z3_context,Cint,Z3_sort),ctx,v,ty)
 end
 
-@wrap function Z3_mk_unsigned_int(ctx::Z3_context,v::Uint32,ty::Z3_sort)
-    ccall((:Z3_mk_unsigned_int,"libz3"),Z3_ast,(Z3_context,Uint32,Z3_sort),ctx,v,ty)
+@wrap function Z3_mk_unsigned_int(ctx::Z3_context,v::UInt32,ty::Z3_sort)
+    ccall((:Z3_mk_unsigned_int,"libz3"),Z3_ast,(Z3_context,UInt32,Z3_sort),ctx,v,ty)
 end
 
 @wrap function Z3_mk_int64(ctx::Z3_context,v::Clonglong,ty::Z3_sort)
@@ -1208,47 +1208,47 @@ end
 end
 
 @wrap function Z3_mk_unsigned_int64(ctx::Z3_context,v::Culonglong,ty::Z3_sort)
-    ccall((:Z3_mk_unsigned_int64,"libz3"),Z3_ast,(Z3_context,ctxulonglong,Z3_sort),ctx,v,ty)
+    ccall((:Z3_mk_unsigned_int64,"libz3"),Z3_ast,(Z3_context,Culonglong,Z3_sort),ctx,v,ty)
 end
 
-@wrap function Z3_mk_pattern(ctx::Z3_context,num_patterns::Uint32,terms::Ptr{Z3_ast})
-    ccall((:Z3_mk_pattern,"libz3"),Z3_pattern,(Z3_context,Uint32,Ptr{Z3_ast}),ctx,num_patterns,terms)
+@wrap function Z3_mk_pattern(ctx::Z3_context,num_patterns::UInt32,terms::Ptr{Z3_ast})
+    ccall((:Z3_mk_pattern,"libz3"),Z3_pattern,(Z3_context,UInt32,Ptr{Z3_ast}),ctx,num_patterns,terms)
 end
 
-@wrap function Z3_mk_bound(ctx::Z3_context,index::Uint32,ty::Z3_sort)
-    ccall((:Z3_mk_bound,"libz3"),Z3_ast,(Z3_context,Uint32,Z3_sort),ctx,index,ty)
+@wrap function Z3_mk_bound(ctx::Z3_context,index::UInt32,ty::Z3_sort)
+    ccall((:Z3_mk_bound,"libz3"),Z3_ast,(Z3_context,UInt32,Z3_sort),ctx,index,ty)
 end
 
-@wrap function Z3_mk_forall(ctx::Z3_context,weight::Uint32,num_patterns::Uint32,patterns::Ptr{Z3_pattern},num_decls::Uint32,sorts::Ptr{Z3_sort},decl_names::Ptr{Z3_symbol},body::Z3_ast)
-    ccall((:Z3_mk_forall,"libz3"),Z3_ast,(Z3_context,Uint32,Uint32,Ptr{Z3_pattern},Uint32,Ptr{Z3_sort},Ptr{Z3_symbol},Z3_ast),ctx,weight,num_patterns,patterns,num_decls,sorts,decl_names,body)
+@wrap function Z3_mk_forall(ctx::Z3_context,weight::UInt32,num_patterns::UInt32,patterns::Ptr{Z3_pattern},num_decls::UInt32,sorts::Ptr{Z3_sort},decl_names::Ptr{Z3_symbol},body::Z3_ast)
+    ccall((:Z3_mk_forall,"libz3"),Z3_ast,(Z3_context,UInt32,UInt32,Ptr{Z3_pattern},UInt32,Ptr{Z3_sort},Ptr{Z3_symbol},Z3_ast),ctx,weight,num_patterns,patterns,num_decls,sorts,decl_names,body)
 end
 
-@wrap function Z3_mk_exists(ctx::Z3_context,weight::Uint32,num_patterns::Uint32,patterns::Ptr{Z3_pattern},num_decls::Uint32,sorts::Ptr{Z3_sort},decl_names::Ptr{Z3_symbol},body::Z3_ast)
-    ccall((:Z3_mk_exists,"libz3"),Z3_ast,(Z3_context,Uint32,Uint32,Ptr{Z3_pattern},Uint32,Ptr{Z3_sort},Ptr{Z3_symbol},Z3_ast),ctx,weight,num_patterns,patterns,num_decls,sorts,decl_names,body)
+@wrap function Z3_mk_exists(ctx::Z3_context,weight::UInt32,num_patterns::UInt32,patterns::Ptr{Z3_pattern},num_decls::UInt32,sorts::Ptr{Z3_sort},decl_names::Ptr{Z3_symbol},body::Z3_ast)
+    ccall((:Z3_mk_exists,"libz3"),Z3_ast,(Z3_context,UInt32,UInt32,Ptr{Z3_pattern},UInt32,Ptr{Z3_sort},Ptr{Z3_symbol},Z3_ast),ctx,weight,num_patterns,patterns,num_decls,sorts,decl_names,body)
 end
 
-@wrap function Z3_mk_quantifier(ctx::Z3_context,is_forall::Z3_bool,weight::Uint32,num_patterns::Uint32,patterns::Ptr{Z3_pattern},num_decls::Uint32,sorts::Ptr{Z3_sort},decl_names::Ptr{Z3_symbol},body::Z3_ast)
-    ccall((:Z3_mk_quantifier,"libz3"),Z3_ast,(Z3_context,Z3_bool,Uint32,Uint32,Ptr{Z3_pattern},Uint32,Ptr{Z3_sort},Ptr{Z3_symbol},Z3_ast),ctx,is_forall,weight,num_patterns,patterns,num_decls,sorts,decl_names,body)
+@wrap function Z3_mk_quantifier(ctx::Z3_context,is_forall::Z3_bool,weight::UInt32,num_patterns::UInt32,patterns::Ptr{Z3_pattern},num_decls::UInt32,sorts::Ptr{Z3_sort},decl_names::Ptr{Z3_symbol},body::Z3_ast)
+    ccall((:Z3_mk_quantifier,"libz3"),Z3_ast,(Z3_context,Z3_bool,UInt32,UInt32,Ptr{Z3_pattern},UInt32,Ptr{Z3_sort},Ptr{Z3_symbol},Z3_ast),ctx,is_forall,weight,num_patterns,patterns,num_decls,sorts,decl_names,body)
 end
 
-@wrap function Z3_mk_quantifier_ex(ctx::Z3_context,is_forall::Z3_bool,weight::Uint32,quantifier_id::Z3_symbol,skolem_id::Z3_symbol,num_patterns::Uint32,patterns::Ptr{Z3_pattern},num_no_patterns::Uint32,no_patterns::Ptr{Z3_ast},num_decls::Uint32,sorts::Ptr{Z3_sort},decl_names::Ptr{Z3_symbol},body::Z3_ast)
-    ccall((:Z3_mk_quantifier_ex,"libz3"),Z3_ast,(Z3_context,Z3_bool,Uint32,Z3_symbol,Z3_symbol,Uint32,Ptr{Z3_pattern},Uint32,Ptr{Z3_ast},Uint32,Ptr{Z3_sort},Ptr{Z3_symbol},Z3_ast),ctx,is_forall,weight,quantifier_id,skolem_id,num_patterns,patterns,num_no_patterns,no_patterns,num_decls,sorts,decl_names,body)
+@wrap function Z3_mk_quantifier_ex(ctx::Z3_context,is_forall::Z3_bool,weight::UInt32,quantifier_id::Z3_symbol,skolem_id::Z3_symbol,num_patterns::UInt32,patterns::Ptr{Z3_pattern},num_no_patterns::UInt32,no_patterns::Ptr{Z3_ast},num_decls::UInt32,sorts::Ptr{Z3_sort},decl_names::Ptr{Z3_symbol},body::Z3_ast)
+    ccall((:Z3_mk_quantifier_ex,"libz3"),Z3_ast,(Z3_context,Z3_bool,UInt32,Z3_symbol,Z3_symbol,UInt32,Ptr{Z3_pattern},UInt32,Ptr{Z3_ast},UInt32,Ptr{Z3_sort},Ptr{Z3_symbol},Z3_ast),ctx,is_forall,weight,quantifier_id,skolem_id,num_patterns,patterns,num_no_patterns,no_patterns,num_decls,sorts,decl_names,body)
 end
 
-@wrap function Z3_mk_forall_const(ctx::Z3_context,weight::Uint32,num_bound::Uint32,bound::Ptr{Z3_app},num_patterns::Uint32,patterns::Ptr{Z3_pattern},body::Z3_ast)
-    ccall((:Z3_mk_forall_const,"libz3"),Z3_ast,(Z3_context,Uint32,Uint32,Ptr{Z3_app},Uint32,Ptr{Z3_pattern},Z3_ast),ctx,weight,num_bound,bound,num_patterns,patterns,body)
+@wrap function Z3_mk_forall_const(ctx::Z3_context,weight::UInt32,num_bound::UInt32,bound::Ptr{Z3_app},num_patterns::UInt32,patterns::Ptr{Z3_pattern},body::Z3_ast)
+    ccall((:Z3_mk_forall_const,"libz3"),Z3_ast,(Z3_context,UInt32,UInt32,Ptr{Z3_app},UInt32,Ptr{Z3_pattern},Z3_ast),ctx,weight,num_bound,bound,num_patterns,patterns,body)
 end
 
-@wrap function Z3_mk_exists_const(ctx::Z3_context,weight::Uint32,num_bound::Uint32,bound::Ptr{Z3_app},num_patterns::Uint32,patterns::Ptr{Z3_pattern},body::Z3_ast)
-    ccall((:Z3_mk_exists_const,"libz3"),Z3_ast,(Z3_context,Uint32,Uint32,Ptr{Z3_app},Uint32,Ptr{Z3_pattern},Z3_ast),ctx,weight,num_bound,bound,num_patterns,patterns,body)
+@wrap function Z3_mk_exists_const(ctx::Z3_context,weight::UInt32,num_bound::UInt32,bound::Ptr{Z3_app},num_patterns::UInt32,patterns::Ptr{Z3_pattern},body::Z3_ast)
+    ccall((:Z3_mk_exists_const,"libz3"),Z3_ast,(Z3_context,UInt32,UInt32,Ptr{Z3_app},UInt32,Ptr{Z3_pattern},Z3_ast),ctx,weight,num_bound,bound,num_patterns,patterns,body)
 end
 
-@wrap function Z3_mk_quantifier_const(ctx::Z3_context,is_forall::Z3_bool,weight::Uint32,num_bound::Uint32,bound::Ptr{Z3_app},num_patterns::Uint32,patterns::Ptr{Z3_pattern},body::Z3_ast)
-    ccall((:Z3_mk_quantifier_const,"libz3"),Z3_ast,(Z3_context,Z3_bool,Uint32,Uint32,Ptr{Z3_app},Uint32,Ptr{Z3_pattern},Z3_ast),ctx,is_forall,weight,num_bound,bound,num_patterns,patterns,body)
+@wrap function Z3_mk_quantifier_const(ctx::Z3_context,is_forall::Z3_bool,weight::UInt32,num_bound::UInt32,bound::Ptr{Z3_app},num_patterns::UInt32,patterns::Ptr{Z3_pattern},body::Z3_ast)
+    ccall((:Z3_mk_quantifier_const,"libz3"),Z3_ast,(Z3_context,Z3_bool,UInt32,UInt32,Ptr{Z3_app},UInt32,Ptr{Z3_pattern},Z3_ast),ctx,is_forall,weight,num_bound,bound,num_patterns,patterns,body)
 end
 
-@wrap function Z3_mk_quantifier_const_ex(ctx::Z3_context,is_forall::Z3_bool,weight::Uint32,quantifier_id::Z3_symbol,skolem_id::Z3_symbol,num_bound::Uint32,bound::Ptr{Z3_app},num_patterns::Uint32,patterns::Ptr{Z3_pattern},num_no_patterns::Uint32,no_patterns::Ptr{Z3_ast},body::Z3_ast)
-    ccall((:Z3_mk_quantifier_const_ex,"libz3"),Z3_ast,(Z3_context,Z3_bool,Uint32,Z3_symbol,Z3_symbol,Uint32,Ptr{Z3_app},Uint32,Ptr{Z3_pattern},Uint32,Ptr{Z3_ast},Z3_ast),ctx,is_forall,weight,quantifier_id,skolem_id,num_bound,bound,num_patterns,patterns,num_no_patterns,no_patterns,body)
+@wrap function Z3_mk_quantifier_const_ex(ctx::Z3_context,is_forall::Z3_bool,weight::UInt32,quantifier_id::Z3_symbol,skolem_id::Z3_symbol,num_bound::UInt32,bound::Ptr{Z3_app},num_patterns::UInt32,patterns::Ptr{Z3_pattern},num_no_patterns::UInt32,no_patterns::Ptr{Z3_ast},body::Z3_ast)
+    ccall((:Z3_mk_quantifier_const_ex,"libz3"),Z3_ast,(Z3_context,Z3_bool,UInt32,Z3_symbol,Z3_symbol,UInt32,Ptr{Z3_app},UInt32,Ptr{Z3_pattern},UInt32,Ptr{Z3_ast},Z3_ast),ctx,is_forall,weight,quantifier_id,skolem_id,num_bound,bound,num_patterns,patterns,num_no_patterns,no_patterns,body)
 end
 
 @wrap function Z3_get_symbol_kind(ctx::Z3_context,s::Z3_symbol)
@@ -1268,7 +1268,7 @@ end
 end
 
 @wrap function Z3_get_sort_id(ctx::Z3_context,s::Z3_sort)
-    ccall((:Z3_get_sort_id,"libz3"),Uint32,(Z3_context,Z3_sort),ctx,s)
+    ccall((:Z3_get_sort_id,"libz3"),UInt32,(Z3_context,Z3_sort),ctx,s)
 end
 
 @wrap function Z3_sort_to_ast(ctx::Z3_context,s::Z3_sort)
@@ -1284,7 +1284,7 @@ end
 end
 
 @wrap function Z3_get_bv_sort_size(ctx::Z3_context,t::Z3_sort)
-    ccall((:Z3_get_bv_sort_size,"libz3"),Uint32,(Z3_context,Z3_sort),ctx,t)
+    ccall((:Z3_get_bv_sort_size,"libz3"),UInt32,(Z3_context,Z3_sort),ctx,t)
 end
 
 @wrap function Z3_get_finite_domain_sort_size(ctx::Z3_context,s::Z3_sort,r::Ptr{Culonglong})
@@ -1304,35 +1304,35 @@ end
 end
 
 @wrap function Z3_get_tuple_sort_num_fields(ctx::Z3_context,t::Z3_sort)
-    ccall((:Z3_get_tuple_sort_num_fields,"libz3"),Uint32,(Z3_context,Z3_sort),ctx,t)
+    ccall((:Z3_get_tuple_sort_num_fields,"libz3"),UInt32,(Z3_context,Z3_sort),ctx,t)
 end
 
-@wrap function Z3_get_tuple_sort_field_decl(ctx::Z3_context,t::Z3_sort,i::Uint32)
-    ccall((:Z3_get_tuple_sort_field_decl,"libz3"),Z3_func_decl,(Z3_context,Z3_sort,Uint32),ctx,t,i)
+@wrap function Z3_get_tuple_sort_field_decl(ctx::Z3_context,t::Z3_sort,i::UInt32)
+    ccall((:Z3_get_tuple_sort_field_decl,"libz3"),Z3_func_decl,(Z3_context,Z3_sort,UInt32),ctx,t,i)
 end
 
 @wrap function Z3_get_datatype_sort_num_constructors(ctx::Z3_context,t::Z3_sort)
-    ccall((:Z3_get_datatype_sort_num_constructors,"libz3"),Uint32,(Z3_context,Z3_sort),ctx,t)
+    ccall((:Z3_get_datatype_sort_num_constructors,"libz3"),UInt32,(Z3_context,Z3_sort),ctx,t)
 end
 
-@wrap function Z3_get_datatype_sort_constructor(ctx::Z3_context,t::Z3_sort,idx::Uint32)
-    ccall((:Z3_get_datatype_sort_constructor,"libz3"),Z3_func_decl,(Z3_context,Z3_sort,Uint32),ctx,t,idx)
+@wrap function Z3_get_datatype_sort_constructor(ctx::Z3_context,t::Z3_sort,idx::UInt32)
+    ccall((:Z3_get_datatype_sort_constructor,"libz3"),Z3_func_decl,(Z3_context,Z3_sort,UInt32),ctx,t,idx)
 end
 
-@wrap function Z3_get_datatype_sort_recognizer(ctx::Z3_context,t::Z3_sort,idx::Uint32)
-    ccall((:Z3_get_datatype_sort_recognizer,"libz3"),Z3_func_decl,(Z3_context,Z3_sort,Uint32),ctx,t,idx)
+@wrap function Z3_get_datatype_sort_recognizer(ctx::Z3_context,t::Z3_sort,idx::UInt32)
+    ccall((:Z3_get_datatype_sort_recognizer,"libz3"),Z3_func_decl,(Z3_context,Z3_sort,UInt32),ctx,t,idx)
 end
 
-@wrap function Z3_get_datatype_sort_constructor_accessor(ctx::Z3_context,t::Z3_sort,idx_c::Uint32,idx_a::Uint32)
-    ccall((:Z3_get_datatype_sort_constructor_accessor,"libz3"),Z3_func_decl,(Z3_context,Z3_sort,Uint32,Uint32),ctx,t,idx_c,idx_a)
+@wrap function Z3_get_datatype_sort_constructor_accessor(ctx::Z3_context,t::Z3_sort,idx_c::UInt32,idx_a::UInt32)
+    ccall((:Z3_get_datatype_sort_constructor_accessor,"libz3"),Z3_func_decl,(Z3_context,Z3_sort,UInt32,UInt32),ctx,t,idx_c,idx_a)
 end
 
 @wrap function Z3_get_relation_arity(ctx::Z3_context,s::Z3_sort)
-    ccall((:Z3_get_relation_arity,"libz3"),Uint32,(Z3_context,Z3_sort),ctx,s)
+    ccall((:Z3_get_relation_arity,"libz3"),UInt32,(Z3_context,Z3_sort),ctx,s)
 end
 
-@wrap function Z3_get_relation_column(ctx::Z3_context,s::Z3_sort,ctxol::Uint32)
-    ccall((:Z3_get_relation_column,"libz3"),Z3_sort,(Z3_context,Z3_sort,Uint32),ctx,s,ctxol)
+@wrap function Z3_get_relation_column(ctx::Z3_context,s::Z3_sort,ctxol::UInt32)
+    ccall((:Z3_get_relation_column,"libz3"),Z3_sort,(Z3_context,Z3_sort,UInt32),ctx,s,ctxol)
 end
 
 @wrap function Z3_func_decl_to_ast(ctx::Z3_context,f::Z3_func_decl)
@@ -1344,7 +1344,7 @@ end
 end
 
 @wrap function Z3_get_func_decl_id(ctx::Z3_context,f::Z3_func_decl)
-    ccall((:Z3_get_func_decl_id,"libz3"),Uint32,(Z3_context,Z3_func_decl),ctx,f)
+    ccall((:Z3_get_func_decl_id,"libz3"),UInt32,(Z3_context,Z3_func_decl),ctx,f)
 end
 
 @wrap function Z3_get_decl_name(ctx::Z3_context,d::Z3_func_decl)
@@ -1356,15 +1356,15 @@ end
 end
 
 @wrap function Z3_get_domain_size(ctx::Z3_context,d::Z3_func_decl)
-    ccall((:Z3_get_domain_size,"libz3"),Uint32,(Z3_context,Z3_func_decl),ctx,d)
+    ccall((:Z3_get_domain_size,"libz3"),UInt32,(Z3_context,Z3_func_decl),ctx,d)
 end
 
 @wrap function Z3_get_arity(ctx::Z3_context,d::Z3_func_decl)
-    ccall((:Z3_get_arity,"libz3"),Uint32,(Z3_context,Z3_func_decl),ctx,d)
+    ccall((:Z3_get_arity,"libz3"),UInt32,(Z3_context,Z3_func_decl),ctx,d)
 end
 
-@wrap function Z3_get_domain(ctx::Z3_context,d::Z3_func_decl,i::Uint32)
-    ccall((:Z3_get_domain,"libz3"),Z3_sort,(Z3_context,Z3_func_decl,Uint32),ctx,d,i)
+@wrap function Z3_get_domain(ctx::Z3_context,d::Z3_func_decl,i::UInt32)
+    ccall((:Z3_get_domain,"libz3"),Z3_sort,(Z3_context,Z3_func_decl,UInt32),ctx,d,i)
 end
 
 @wrap function Z3_get_range(ctx::Z3_context,d::Z3_func_decl)
@@ -1372,39 +1372,39 @@ end
 end
 
 @wrap function Z3_get_decl_num_parameters(ctx::Z3_context,d::Z3_func_decl)
-    ccall((:Z3_get_decl_num_parameters,"libz3"),Uint32,(Z3_context,Z3_func_decl),ctx,d)
+    ccall((:Z3_get_decl_num_parameters,"libz3"),UInt32,(Z3_context,Z3_func_decl),ctx,d)
 end
 
-@wrap function Z3_get_decl_parameter_kind(ctx::Z3_context,d::Z3_func_decl,idx::Uint32)
-    ccall((:Z3_get_decl_parameter_kind,"libz3"),Z3_parameter_kind,(Z3_context,Z3_func_decl,Uint32),ctx,d,idx)
+@wrap function Z3_get_decl_parameter_kind(ctx::Z3_context,d::Z3_func_decl,idx::UInt32)
+    ccall((:Z3_get_decl_parameter_kind,"libz3"),Z3_parameter_kind,(Z3_context,Z3_func_decl,UInt32),ctx,d,idx)
 end
 
-@wrap function Z3_get_decl_int_parameter(ctx::Z3_context,d::Z3_func_decl,idx::Uint32)
-    ccall((:Z3_get_decl_int_parameter,"libz3"),Cint,(Z3_context,Z3_func_decl,Uint32),ctx,d,idx)
+@wrap function Z3_get_decl_int_parameter(ctx::Z3_context,d::Z3_func_decl,idx::UInt32)
+    ccall((:Z3_get_decl_int_parameter,"libz3"),Cint,(Z3_context,Z3_func_decl,UInt32),ctx,d,idx)
 end
 
-@wrap function Z3_get_decl_double_parameter(ctx::Z3_context,d::Z3_func_decl,idx::Uint32)
-    ccall((:Z3_get_decl_double_parameter,"libz3"),ctxdouble,(Z3_context,Z3_func_decl,Uint32),ctx,d,idx)
+@wrap function Z3_get_decl_double_parameter(ctx::Z3_context,d::Z3_func_decl,idx::UInt32)
+    ccall((:Z3_get_decl_double_parameter,"libz3"),Cdouble,(Z3_context,Z3_func_decl,UInt32),ctx,d,idx)
 end
 
-@wrap function Z3_get_decl_symbol_parameter(ctx::Z3_context,d::Z3_func_decl,idx::Uint32)
-    ccall((:Z3_get_decl_symbol_parameter,"libz3"),Z3_symbol,(Z3_context,Z3_func_decl,Uint32),ctx,d,idx)
+@wrap function Z3_get_decl_symbol_parameter(ctx::Z3_context,d::Z3_func_decl,idx::UInt32)
+    ccall((:Z3_get_decl_symbol_parameter,"libz3"),Z3_symbol,(Z3_context,Z3_func_decl,UInt32),ctx,d,idx)
 end
 
-@wrap function Z3_get_decl_sort_parameter(ctx::Z3_context,d::Z3_func_decl,idx::Uint32)
-    ccall((:Z3_get_decl_sort_parameter,"libz3"),Z3_sort,(Z3_context,Z3_func_decl,Uint32),ctx,d,idx)
+@wrap function Z3_get_decl_sort_parameter(ctx::Z3_context,d::Z3_func_decl,idx::UInt32)
+    ccall((:Z3_get_decl_sort_parameter,"libz3"),Z3_sort,(Z3_context,Z3_func_decl,UInt32),ctx,d,idx)
 end
 
-@wrap function Z3_get_decl_ast_parameter(ctx::Z3_context,d::Z3_func_decl,idx::Uint32)
-    ccall((:Z3_get_decl_ast_parameter,"libz3"),Z3_ast,(Z3_context,Z3_func_decl,Uint32),ctx,d,idx)
+@wrap function Z3_get_decl_ast_parameter(ctx::Z3_context,d::Z3_func_decl,idx::UInt32)
+    ccall((:Z3_get_decl_ast_parameter,"libz3"),Z3_ast,(Z3_context,Z3_func_decl,UInt32),ctx,d,idx)
 end
 
-@wrap function Z3_get_decl_func_decl_parameter(ctx::Z3_context,d::Z3_func_decl,idx::Uint32)
-    ccall((:Z3_get_decl_func_decl_parameter,"libz3"),Z3_func_decl,(Z3_context,Z3_func_decl,Uint32),ctx,d,idx)
+@wrap function Z3_get_decl_func_decl_parameter(ctx::Z3_context,d::Z3_func_decl,idx::UInt32)
+    ccall((:Z3_get_decl_func_decl_parameter,"libz3"),Z3_func_decl,(Z3_context,Z3_func_decl,UInt32),ctx,d,idx)
 end
 
-@wrap function Z3_get_decl_rational_parameter(ctx::Z3_context,d::Z3_func_decl,idx::Uint32)
-    ccall((:Z3_get_decl_rational_parameter,"libz3"),Z3_string,(Z3_context,Z3_func_decl,Uint32),ctx,d,idx)
+@wrap function Z3_get_decl_rational_parameter(ctx::Z3_context,d::Z3_func_decl,idx::UInt32)
+    ccall((:Z3_get_decl_rational_parameter,"libz3"),Z3_string,(Z3_context,Z3_func_decl,UInt32),ctx,d,idx)
 end
 
 @wrap function Z3_app_to_ast(ctx::Z3_context,a::Z3_app)
@@ -1416,11 +1416,11 @@ end
 end
 
 @wrap function Z3_get_app_num_args(ctx::Z3_context,a::Z3_app)
-    ccall((:Z3_get_app_num_args,"libz3"),Uint32,(Z3_context,Z3_app),ctx,a)
+    ccall((:Z3_get_app_num_args,"libz3"),UInt32,(Z3_context,Z3_app),ctx,a)
 end
 
-@wrap function Z3_get_app_arg(ctx::Z3_context,a::Z3_app,i::Uint32)
-    ccall((:Z3_get_app_arg,"libz3"),Z3_ast,(Z3_context,Z3_app,Uint32),ctx,a,i)
+@wrap function Z3_get_app_arg(ctx::Z3_context,a::Z3_app,i::UInt32)
+    ccall((:Z3_get_app_arg,"libz3"),Z3_ast,(Z3_context,Z3_app,UInt32),ctx,a,i)
 end
 
 @wrap function Z3_is_eq_ast(ctx::Z3_context,t1::Z3_ast,t2::Z3_ast)
@@ -1428,11 +1428,11 @@ end
 end
 
 @wrap function Z3_get_ast_id(ctx::Z3_context,t::Z3_ast)
-    ccall((:Z3_get_ast_id,"libz3"),Uint32,(Z3_context,Z3_ast),ctx,t)
+    ccall((:Z3_get_ast_id,"libz3"),UInt32,(Z3_context,Z3_ast),ctx,t)
 end
 
 @wrap function Z3_get_ast_hash(ctx::Z3_context,a::Z3_ast)
-    ccall((:Z3_get_ast_hash,"libz3"),Uint32,(Z3_context,Z3_ast),ctx,a)
+    ccall((:Z3_get_ast_hash,"libz3"),UInt32,(Z3_context,Z3_ast),ctx,a)
 end
 
 @wrap function Z3_get_sort(ctx::Z3_context,a::Z3_ast)
@@ -1475,8 +1475,8 @@ end
     ccall((:Z3_get_numeral_string,"libz3"),Z3_string,(Z3_context,Z3_ast),ctx,a)
 end
 
-@wrap function Z3_get_numeral_decimal_string(ctx::Z3_context,a::Z3_ast,precision::Uint32)
-    ccall((:Z3_get_numeral_decimal_string,"libz3"),Z3_string,(Z3_context,Z3_ast,Uint32),ctx,a,precision)
+@wrap function Z3_get_numeral_decimal_string(ctx::Z3_context,a::Z3_ast,precision::UInt32)
+    ccall((:Z3_get_numeral_decimal_string,"libz3"),Z3_string,(Z3_context,Z3_ast,UInt32),ctx,a,precision)
 end
 
 @wrap function Z3_get_numerator(ctx::Z3_context,a::Z3_ast)
@@ -1495,8 +1495,8 @@ end
     ccall((:Z3_get_numeral_int,"libz3"),Z3_bool,(Z3_context,Z3_ast,Ref{Cint}),ctx,v,i)
 end
 
-@wrap function Z3_get_numeral_uint(ctx::Z3_context,v::Z3_ast,u::Ref{Uint32})
-    ccall((:Z3_get_numeral_uint,"libz3"),Z3_bool,(Z3_context,Z3_ast,Ref{Uint32}),ctx,v,u)
+@wrap function Z3_get_numeral_uint(ctx::Z3_context,v::Z3_ast,u::Ref{UInt32})
+    ccall((:Z3_get_numeral_uint,"libz3"),Z3_bool,(Z3_context,Z3_ast,Ref{UInt32}),ctx,v,u)
 end
 
 @wrap function Z3_get_numeral_uint64(ctx::Z3_context,v::Z3_ast,u::Ptr{Culonglong})
@@ -1512,12 +1512,12 @@ end
     ccall((:Z3_get_numeral_rational_int64,"libz3"),Z3_bool,(Z3_context,Z3_ast,Ref{Clonglong},Ref{Clonglong}),ctx,v,num,den)
 end
 
-@wrap function Z3_get_algebraic_number_lower(ctx::Z3_context,a::Z3_ast,precision::Uint32)
-    ccall((:Z3_get_algebraic_number_lower,"libz3"),Z3_ast,(Z3_context,Z3_ast,Uint32),ctx,a,precision)
+@wrap function Z3_get_algebraic_number_lower(ctx::Z3_context,a::Z3_ast,precision::UInt32)
+    ccall((:Z3_get_algebraic_number_lower,"libz3"),Z3_ast,(Z3_context,Z3_ast,UInt32),ctx,a,precision)
 end
 
-@wrap function Z3_get_algebraic_number_upper(ctx::Z3_context,a::Z3_ast,precision::Uint32)
-    ccall((:Z3_get_algebraic_number_upper,"libz3"),Z3_ast,(Z3_context,Z3_ast,Uint32),ctx,a,precision)
+@wrap function Z3_get_algebraic_number_upper(ctx::Z3_context,a::Z3_ast,precision::UInt32)
+    ccall((:Z3_get_algebraic_number_upper,"libz3"),Z3_ast,(Z3_context,Z3_ast,UInt32),ctx,a,precision)
 end
 
 @wrap function Z3_pattern_to_ast(ctx::Z3_context,p::Z3_pattern)
@@ -1525,15 +1525,15 @@ end
 end
 
 @wrap function Z3_get_pattern_num_terms(ctx::Z3_context,p::Z3_pattern)
-    ccall((:Z3_get_pattern_num_terms,"libz3"),Uint32,(Z3_context,Z3_pattern),ctx,p)
+    ccall((:Z3_get_pattern_num_terms,"libz3"),UInt32,(Z3_context,Z3_pattern),ctx,p)
 end
 
-@wrap function Z3_get_pattern(ctx::Z3_context,p::Z3_pattern,idx::Uint32)
-    ccall((:Z3_get_pattern,"libz3"),Z3_ast,(Z3_context,Z3_pattern,Uint32),ctx,p,idx)
+@wrap function Z3_get_pattern(ctx::Z3_context,p::Z3_pattern,idx::UInt32)
+    ccall((:Z3_get_pattern,"libz3"),Z3_ast,(Z3_context,Z3_pattern,UInt32),ctx,p,idx)
 end
 
 @wrap function Z3_get_index_value(ctx::Z3_context,a::Z3_ast)
-    ccall((:Z3_get_index_value,"libz3"),Uint32,(Z3_context,Z3_ast),ctx,a)
+    ccall((:Z3_get_index_value,"libz3"),UInt32,(Z3_context,Z3_ast),ctx,a)
 end
 
 @wrap function Z3_is_quantifier_forall(ctx::Z3_context,a::Z3_ast)
@@ -1541,35 +1541,35 @@ end
 end
 
 @wrap function Z3_get_quantifier_weight(ctx::Z3_context,a::Z3_ast)
-    ccall((:Z3_get_quantifier_weight,"libz3"),Uint32,(Z3_context,Z3_ast),ctx,a)
+    ccall((:Z3_get_quantifier_weight,"libz3"),UInt32,(Z3_context,Z3_ast),ctx,a)
 end
 
 @wrap function Z3_get_quantifier_num_patterns(ctx::Z3_context,a::Z3_ast)
-    ccall((:Z3_get_quantifier_num_patterns,"libz3"),Uint32,(Z3_context,Z3_ast),ctx,a)
+    ccall((:Z3_get_quantifier_num_patterns,"libz3"),UInt32,(Z3_context,Z3_ast),ctx,a)
 end
 
-@wrap function Z3_get_quantifier_pattern_ast(ctx::Z3_context,a::Z3_ast,i::Uint32)
-    ccall((:Z3_get_quantifier_pattern_ast,"libz3"),Z3_pattern,(Z3_context,Z3_ast,Uint32),ctx,a,i)
+@wrap function Z3_get_quantifier_pattern_ast(ctx::Z3_context,a::Z3_ast,i::UInt32)
+    ccall((:Z3_get_quantifier_pattern_ast,"libz3"),Z3_pattern,(Z3_context,Z3_ast,UInt32),ctx,a,i)
 end
 
 @wrap function Z3_get_quantifier_num_no_patterns(ctx::Z3_context,a::Z3_ast)
-    ccall((:Z3_get_quantifier_num_no_patterns,"libz3"),Uint32,(Z3_context,Z3_ast),ctx,a)
+    ccall((:Z3_get_quantifier_num_no_patterns,"libz3"),UInt32,(Z3_context,Z3_ast),ctx,a)
 end
 
-@wrap function Z3_get_quantifier_no_pattern_ast(ctx::Z3_context,a::Z3_ast,i::Uint32)
-    ccall((:Z3_get_quantifier_no_pattern_ast,"libz3"),Z3_ast,(Z3_context,Z3_ast,Uint32),ctx,a,i)
+@wrap function Z3_get_quantifier_no_pattern_ast(ctx::Z3_context,a::Z3_ast,i::UInt32)
+    ccall((:Z3_get_quantifier_no_pattern_ast,"libz3"),Z3_ast,(Z3_context,Z3_ast,UInt32),ctx,a,i)
 end
 
 @wrap function Z3_get_quantifier_num_bound(ctx::Z3_context,a::Z3_ast)
-    ccall((:Z3_get_quantifier_num_bound,"libz3"),Uint32,(Z3_context,Z3_ast),ctx,a)
+    ccall((:Z3_get_quantifier_num_bound,"libz3"),UInt32,(Z3_context,Z3_ast),ctx,a)
 end
 
-@wrap function Z3_get_quantifier_bound_name(ctx::Z3_context,a::Z3_ast,i::Uint32)
-    ccall((:Z3_get_quantifier_bound_name,"libz3"),Z3_symbol,(Z3_context,Z3_ast,Uint32),ctx,a,i)
+@wrap function Z3_get_quantifier_bound_name(ctx::Z3_context,a::Z3_ast,i::UInt32)
+    ccall((:Z3_get_quantifier_bound_name,"libz3"),Z3_symbol,(Z3_context,Z3_ast,UInt32),ctx,a,i)
 end
 
-@wrap function Z3_get_quantifier_bound_sort(ctx::Z3_context,a::Z3_ast,i::Uint32)
-    ccall((:Z3_get_quantifier_bound_sort,"libz3"),Z3_sort,(Z3_context,Z3_ast,Uint32),ctx,a,i)
+@wrap function Z3_get_quantifier_bound_sort(ctx::Z3_context,a::Z3_ast,i::UInt32)
+    ccall((:Z3_get_quantifier_bound_sort,"libz3"),Z3_sort,(Z3_context,Z3_ast,UInt32),ctx,a,i)
 end
 
 @wrap function Z3_get_quantifier_body(ctx::Z3_context,a::Z3_ast)
@@ -1592,16 +1592,16 @@ end
     ccall((:Z3_simplify_get_param_descrs,"libz3"),Z3_param_descrs,(Z3_context,),ctx)
 end
 
-@wrap function Z3_update_term(ctx::Z3_context,a::Z3_ast,num_args::Uint32,args::Ptr{Z3_ast})
-    ccall((:Z3_update_term,"libz3"),Z3_ast,(Z3_context,Z3_ast,Uint32,Ptr{Z3_ast}),ctx,a,num_args,args)
+@wrap function Z3_update_term(ctx::Z3_context,a::Z3_ast,num_args::UInt32,args::Ptr{Z3_ast})
+    ccall((:Z3_update_term,"libz3"),Z3_ast,(Z3_context,Z3_ast,UInt32,Ptr{Z3_ast}),ctx,a,num_args,args)
 end
 
-@wrap function Z3_substitute(ctx::Z3_context,a::Z3_ast,num_exprs::Uint32,from::Ptr{Z3_ast},to::Ptr{Z3_ast})
-    ccall((:Z3_substitute,"libz3"),Z3_ast,(Z3_context,Z3_ast,Uint32,Ptr{Z3_ast},Ptr{Z3_ast}),ctx,a,num_exprs,from,to)
+@wrap function Z3_substitute(ctx::Z3_context,a::Z3_ast,num_exprs::UInt32,from::Ptr{Z3_ast},to::Ptr{Z3_ast})
+    ccall((:Z3_substitute,"libz3"),Z3_ast,(Z3_context,Z3_ast,UInt32,Ptr{Z3_ast},Ptr{Z3_ast}),ctx,a,num_exprs,from,to)
 end
 
-@wrap function Z3_substitute_vars(ctx::Z3_context,a::Z3_ast,num_exprs::Uint32,to::Ptr{Z3_ast})
-    ccall((:Z3_substitute_vars,"libz3"),Z3_ast,(Z3_context,Z3_ast,Uint32,Ptr{Z3_ast}),ctx,a,num_exprs,to)
+@wrap function Z3_substitute_vars(ctx::Z3_context,a::Z3_ast,num_exprs::UInt32,to::Ptr{Z3_ast})
+    ccall((:Z3_substitute_vars,"libz3"),Z3_ast,(Z3_context,Z3_ast,UInt32,Ptr{Z3_ast}),ctx,a,num_exprs,to)
 end
 
 @wrap function Z3_translate(source::Z3_context,a::Z3_ast,target::Z3_context)
@@ -1633,27 +1633,27 @@ end
 end
 
 @wrap function Z3_model_get_num_consts(ctx::Z3_context,m::Z3_model)
-    ccall((:Z3_model_get_num_consts,"libz3"),Uint32,(Z3_context,Z3_model),ctx,m)
+    ccall((:Z3_model_get_num_consts,"libz3"),UInt32,(Z3_context,Z3_model),ctx,m)
 end
 
-@wrap function Z3_model_get_const_decl(ctx::Z3_context,m::Z3_model,i::Uint32)
-    ccall((:Z3_model_get_const_decl,"libz3"),Z3_func_decl,(Z3_context,Z3_model,Uint32),ctx,m,i)
+@wrap function Z3_model_get_const_decl(ctx::Z3_context,m::Z3_model,i::UInt32)
+    ccall((:Z3_model_get_const_decl,"libz3"),Z3_func_decl,(Z3_context,Z3_model,UInt32),ctx,m,i)
 end
 
 @wrap function Z3_model_get_num_funcs(ctx::Z3_context,m::Z3_model)
-    ccall((:Z3_model_get_num_funcs,"libz3"),Uint32,(Z3_context,Z3_model),ctx,m)
+    ccall((:Z3_model_get_num_funcs,"libz3"),UInt32,(Z3_context,Z3_model),ctx,m)
 end
 
-@wrap function Z3_model_get_func_decl(ctx::Z3_context,m::Z3_model,i::Uint32)
-    ccall((:Z3_model_get_func_decl,"libz3"),Z3_func_decl,(Z3_context,Z3_model,Uint32),ctx,m,i)
+@wrap function Z3_model_get_func_decl(ctx::Z3_context,m::Z3_model,i::UInt32)
+    ccall((:Z3_model_get_func_decl,"libz3"),Z3_func_decl,(Z3_context,Z3_model,UInt32),ctx,m,i)
 end
 
 @wrap function Z3_model_get_num_sorts(ctx::Z3_context,m::Z3_model)
-    ccall((:Z3_model_get_num_sorts,"libz3"),Uint32,(Z3_context,Z3_model),ctx,m)
+    ccall((:Z3_model_get_num_sorts,"libz3"),UInt32,(Z3_context,Z3_model),ctx,m)
 end
 
-@wrap function Z3_model_get_sort(ctx::Z3_context,m::Z3_model,i::Uint32)
-    ccall((:Z3_model_get_sort,"libz3"),Z3_sort,(Z3_context,Z3_model,Uint32),ctx,m,i)
+@wrap function Z3_model_get_sort(ctx::Z3_context,m::Z3_model,i::UInt32)
+    ccall((:Z3_model_get_sort,"libz3"),Z3_sort,(Z3_context,Z3_model,UInt32),ctx,m,i)
 end
 
 @wrap function Z3_model_get_sort_universe(ctx::Z3_context,m::Z3_model,s::Z3_sort)
@@ -1677,11 +1677,11 @@ end
 end
 
 @wrap function Z3_func_interp_get_num_entries(ctx::Z3_context,f::Z3_func_interp)
-    ccall((:Z3_func_interp_get_num_entries,"libz3"),Uint32,(Z3_context,Z3_func_interp),ctx,f)
+    ccall((:Z3_func_interp_get_num_entries,"libz3"),UInt32,(Z3_context,Z3_func_interp),ctx,f)
 end
 
-@wrap function Z3_func_interp_get_entry(ctx::Z3_context,f::Z3_func_interp,i::Uint32)
-    ccall((:Z3_func_interp_get_entry,"libz3"),Z3_func_entry,(Z3_context,Z3_func_interp,Uint32),ctx,f,i)
+@wrap function Z3_func_interp_get_entry(ctx::Z3_context,f::Z3_func_interp,i::UInt32)
+    ccall((:Z3_func_interp_get_entry,"libz3"),Z3_func_entry,(Z3_context,Z3_func_interp,UInt32),ctx,f,i)
 end
 
 @wrap function Z3_func_interp_get_else(ctx::Z3_context,f::Z3_func_interp)
@@ -1689,7 +1689,7 @@ end
 end
 
 @wrap function Z3_func_interp_get_arity(ctx::Z3_context,f::Z3_func_interp)
-    ccall((:Z3_func_interp_get_arity,"libz3"),Uint32,(Z3_context,Z3_func_interp),ctx,f)
+    ccall((:Z3_func_interp_get_arity,"libz3"),UInt32,(Z3_context,Z3_func_interp),ctx,f)
 end
 
 @wrap function Z3_func_entry_inc_ref(ctx::Z3_context,e::Z3_func_entry)
@@ -1705,11 +1705,11 @@ end
 end
 
 @wrap function Z3_func_entry_get_num_args(ctx::Z3_context,e::Z3_func_entry)
-    ccall((:Z3_func_entry_get_num_args,"libz3"),Uint32,(Z3_context,Z3_func_entry),ctx,e)
+    ccall((:Z3_func_entry_get_num_args,"libz3"),UInt32,(Z3_context,Z3_func_entry),ctx,e)
 end
 
-@wrap function Z3_func_entry_get_arg(ctx::Z3_context,e::Z3_func_entry,i::Uint32)
-    ccall((:Z3_func_entry_get_arg,"libz3"),Z3_ast,(Z3_context,Z3_func_entry,Uint32),ctx,e,i)
+@wrap function Z3_func_entry_get_arg(ctx::Z3_context,e::Z3_func_entry,i::UInt32)
+    ccall((:Z3_func_entry_get_arg,"libz3"),Z3_ast,(Z3_context,Z3_func_entry,UInt32),ctx,e,i)
 end
 
 @wrap function Z3_open_log(filename::Z3_string)
@@ -1752,56 +1752,56 @@ end
     ccall((:Z3_model_to_string,"libz3"),Z3_string,(Z3_context,Z3_model),ctx,m)
 end
 
-@wrap function Z3_benchmark_to_smtlib_string(ctx::Z3_context,name::Z3_string,logic::Z3_string,status::Z3_string,attributes::Z3_string,num_assumptions::Uint32,assumptions::Ptr{Z3_ast},formula::Z3_ast)
-    ccall((:Z3_benchmark_to_smtlib_string,"libz3"),Z3_string,(Z3_context,Z3_string,Z3_string,Z3_string,Z3_string,Uint32,Ptr{Z3_ast},Z3_ast),ctx,name,logic,status,attributes,num_assumptions,assumptions,formula)
+@wrap function Z3_benchmark_to_smtlib_string(ctx::Z3_context,name::Z3_string,logic::Z3_string,status::Z3_string,attributes::Z3_string,num_assumptions::UInt32,assumptions::Ptr{Z3_ast},formula::Z3_ast)
+    ccall((:Z3_benchmark_to_smtlib_string,"libz3"),Z3_string,(Z3_context,Z3_string,Z3_string,Z3_string,Z3_string,UInt32,Ptr{Z3_ast},Z3_ast),ctx,name,logic,status,attributes,num_assumptions,assumptions,formula)
 end
 
-@wrap function Z3_parse_smtlib2_string(ctx::Z3_context,str::Z3_string,num_sorts::Uint32,sort_names::Ptr{Z3_symbol},sorts::Ptr{Z3_sort},num_decls::Uint32,decl_names::Ptr{Z3_symbol},decls::Ptr{Z3_func_decl})
-    ccall((:Z3_parse_smtlib2_string,"libz3"),Z3_ast,(Z3_context,Z3_string,Uint32,Ptr{Z3_symbol},Ptr{Z3_sort},Uint32,Ptr{Z3_symbol},Ptr{Z3_func_decl}),ctx,str,num_sorts,sort_names,sorts,num_decls,decl_names,decls)
+@wrap function Z3_parse_smtlib2_string(ctx::Z3_context,str::Z3_string,num_sorts::UInt32,sort_names::Ptr{Z3_symbol},sorts::Ptr{Z3_sort},num_decls::UInt32,decl_names::Ptr{Z3_symbol},decls::Ptr{Z3_func_decl})
+    ccall((:Z3_parse_smtlib2_string,"libz3"),Z3_ast,(Z3_context,Z3_string,UInt32,Ptr{Z3_symbol},Ptr{Z3_sort},UInt32,Ptr{Z3_symbol},Ptr{Z3_func_decl}),ctx,str,num_sorts,sort_names,sorts,num_decls,decl_names,decls)
 end
 
-@wrap function Z3_parse_smtlib2_file(ctx::Z3_context,file_name::Z3_string,num_sorts::Uint32,sort_names::Ptr{Z3_symbol},sorts::Ptr{Z3_sort},num_decls::Uint32,decl_names::Ptr{Z3_symbol},decls::Ptr{Z3_func_decl})
-    ccall((:Z3_parse_smtlib2_file,"libz3"),Z3_ast,(Z3_context,Z3_string,Uint32,Ptr{Z3_symbol},Ptr{Z3_sort},Uint32,Ptr{Z3_symbol},Ptr{Z3_func_decl}),ctx,file_name,num_sorts,sort_names,sorts,num_decls,decl_names,decls)
+@wrap function Z3_parse_smtlib2_file(ctx::Z3_context,file_name::Z3_string,num_sorts::UInt32,sort_names::Ptr{Z3_symbol},sorts::Ptr{Z3_sort},num_decls::UInt32,decl_names::Ptr{Z3_symbol},decls::Ptr{Z3_func_decl})
+    ccall((:Z3_parse_smtlib2_file,"libz3"),Z3_ast,(Z3_context,Z3_string,UInt32,Ptr{Z3_symbol},Ptr{Z3_sort},UInt32,Ptr{Z3_symbol},Ptr{Z3_func_decl}),ctx,file_name,num_sorts,sort_names,sorts,num_decls,decl_names,decls)
 end
 
-@wrap function Z3_parse_smtlib_string(ctx::Z3_context,str::Z3_string,num_sorts::Uint32,sort_names::Ptr{Z3_symbol},sorts::Ptr{Z3_sort},num_decls::Uint32,decl_names::Ptr{Z3_symbol},decls::Ptr{Z3_func_decl})
-    ccall((:Z3_parse_smtlib_string,"libz3"),Void,(Z3_context,Z3_string,Uint32,Ptr{Z3_symbol},Ptr{Z3_sort},Uint32,Ptr{Z3_symbol},Ptr{Z3_func_decl}),ctx,str,num_sorts,sort_names,sorts,num_decls,decl_names,decls)
+@wrap function Z3_parse_smtlib_string(ctx::Z3_context,str::Z3_string,num_sorts::UInt32,sort_names::Ptr{Z3_symbol},sorts::Ptr{Z3_sort},num_decls::UInt32,decl_names::Ptr{Z3_symbol},decls::Ptr{Z3_func_decl})
+    ccall((:Z3_parse_smtlib_string,"libz3"),Void,(Z3_context,Z3_string,UInt32,Ptr{Z3_symbol},Ptr{Z3_sort},UInt32,Ptr{Z3_symbol},Ptr{Z3_func_decl}),ctx,str,num_sorts,sort_names,sorts,num_decls,decl_names,decls)
 end
 
-@wrap function Z3_parse_smtlib_file(ctx::Z3_context,file_name::Z3_string,num_sorts::Uint32,sort_names::Ptr{Z3_symbol},sorts::Ptr{Z3_sort},num_decls::Uint32,decl_names::Ptr{Z3_symbol},decls::Ptr{Z3_func_decl})
-    ccall((:Z3_parse_smtlib_file,"libz3"),Void,(Z3_context,Z3_string,Uint32,Ptr{Z3_symbol},Ptr{Z3_sort},Uint32,Ptr{Z3_symbol},Ptr{Z3_func_decl}),ctx,file_name,num_sorts,sort_names,sorts,num_decls,decl_names,decls)
+@wrap function Z3_parse_smtlib_file(ctx::Z3_context,file_name::Z3_string,num_sorts::UInt32,sort_names::Ptr{Z3_symbol},sorts::Ptr{Z3_sort},num_decls::UInt32,decl_names::Ptr{Z3_symbol},decls::Ptr{Z3_func_decl})
+    ccall((:Z3_parse_smtlib_file,"libz3"),Void,(Z3_context,Z3_string,UInt32,Ptr{Z3_symbol},Ptr{Z3_sort},UInt32,Ptr{Z3_symbol},Ptr{Z3_func_decl}),ctx,file_name,num_sorts,sort_names,sorts,num_decls,decl_names,decls)
 end
 
 @wrap function Z3_get_smtlib_num_formulas(ctx::Z3_context)
-    ccall((:Z3_get_smtlib_num_formulas,"libz3"),Uint32,(Z3_context,),ctx)
+    ccall((:Z3_get_smtlib_num_formulas,"libz3"),UInt32,(Z3_context,),ctx)
 end
 
-@wrap function Z3_get_smtlib_formula(ctx::Z3_context,i::Uint32)
-    ccall((:Z3_get_smtlib_formula,"libz3"),Z3_ast,(Z3_context,Uint32),ctx,i)
+@wrap function Z3_get_smtlib_formula(ctx::Z3_context,i::UInt32)
+    ccall((:Z3_get_smtlib_formula,"libz3"),Z3_ast,(Z3_context,UInt32),ctx,i)
 end
 
 @wrap function Z3_get_smtlib_num_assumptions(ctx::Z3_context)
-    ccall((:Z3_get_smtlib_num_assumptions,"libz3"),Uint32,(Z3_context,),ctx)
+    ccall((:Z3_get_smtlib_num_assumptions,"libz3"),UInt32,(Z3_context,),ctx)
 end
 
-@wrap function Z3_get_smtlib_assumption(ctx::Z3_context,i::Uint32)
-    ccall((:Z3_get_smtlib_assumption,"libz3"),Z3_ast,(Z3_context,Uint32),ctx,i)
+@wrap function Z3_get_smtlib_assumption(ctx::Z3_context,i::UInt32)
+    ccall((:Z3_get_smtlib_assumption,"libz3"),Z3_ast,(Z3_context,UInt32),ctx,i)
 end
 
 @wrap function Z3_get_smtlib_num_decls(ctx::Z3_context)
-    ccall((:Z3_get_smtlib_num_decls,"libz3"),Uint32,(Z3_context,),ctx)
+    ccall((:Z3_get_smtlib_num_decls,"libz3"),UInt32,(Z3_context,),ctx)
 end
 
-@wrap function Z3_get_smtlib_decl(ctx::Z3_context,i::Uint32)
-    ccall((:Z3_get_smtlib_decl,"libz3"),Z3_func_decl,(Z3_context,Uint32),ctx,i)
+@wrap function Z3_get_smtlib_decl(ctx::Z3_context,i::UInt32)
+    ccall((:Z3_get_smtlib_decl,"libz3"),Z3_func_decl,(Z3_context,UInt32),ctx,i)
 end
 
 @wrap function Z3_get_smtlib_num_sorts(ctx::Z3_context)
-    ccall((:Z3_get_smtlib_num_sorts,"libz3"),Uint32,(Z3_context,),ctx)
+    ccall((:Z3_get_smtlib_num_sorts,"libz3"),UInt32,(Z3_context,),ctx)
 end
 
-@wrap function Z3_get_smtlib_sort(ctx::Z3_context,i::Uint32)
-    ccall((:Z3_get_smtlib_sort,"libz3"),Z3_sort,(Z3_context,Uint32),ctx,i)
+@wrap function Z3_get_smtlib_sort(ctx::Z3_context,i::UInt32)
+    ccall((:Z3_get_smtlib_sort,"libz3"),Z3_sort,(Z3_context,UInt32),ctx,i)
 end
 
 @wrap function Z3_get_smtlib_error(ctx::Z3_context)
@@ -1828,8 +1828,8 @@ end
     ccall((:Z3_get_error_msg_ex,"libz3"),Z3_string,(Z3_context,Z3_error_code),ctx,err)
 end
 
-@wrap function Z3_get_version(major::Ref{Uint32},minor::Ref{Uint32},build_number::Ref{Uint32},revision_number::Ref{Uint32})
-    ccall((:Z3_get_version,"libz3"),Void,(Ref{Uint32},Ref{Uint32},Ref{Uint32},Ref{Uint32}),major,minor,build_number,revision_number)
+@wrap function Z3_get_version(major::Ref{UInt32},minor::Ref{UInt32},build_number::Ref{UInt32},revision_number::Ref{UInt32})
+    ccall((:Z3_get_version,"libz3"),Void,(Ref{UInt32},Ref{UInt32},Ref{UInt32},Ref{UInt32}),major,minor,build_number,revision_number)
 end
 
 @wrap function Z3_enable_trace(tag::Z3_string)
@@ -1864,8 +1864,8 @@ end
     ccall((:Z3_theory_mk_constant,"libz3"),Z3_ast,(Z3_context,Z3_theory,Z3_symbol,Z3_sort),ctx,t,n,s)
 end
 
-@wrap function Z3_theory_mk_func_decl(ctx::Z3_context,t::Z3_theory,n::Z3_symbol,domain_size::Uint32,domain::Ptr{Z3_sort},range::Z3_sort)
-    ccall((:Z3_theory_mk_func_decl,"libz3"),Z3_func_decl,(Z3_context,Z3_theory,Z3_symbol,Uint32,Ptr{Z3_sort},Z3_sort),ctx,t,n,domain_size,domain,range)
+@wrap function Z3_theory_mk_func_decl(ctx::Z3_context,t::Z3_theory,n::Z3_symbol,domain_size::UInt32,domain::Ptr{Z3_sort},range::Z3_sort)
+    ccall((:Z3_theory_mk_func_decl,"libz3"),Z3_func_decl,(Z3_context,Z3_theory,Z3_symbol,UInt32,Ptr{Z3_sort},Z3_sort),ctx,t,n,domain_size,domain,range)
 end
 
 @wrap function Z3_theory_get_context(t::Z3_theory)
@@ -1957,11 +1957,11 @@ end
 end
 
 @wrap function Z3_theory_get_num_parents(t::Z3_theory,n::Z3_ast)
-    ccall((:Z3_theory_get_num_parents,"libz3"),Uint32,(Z3_theory,Z3_ast),t,n)
+    ccall((:Z3_theory_get_num_parents,"libz3"),UInt32,(Z3_theory,Z3_ast),t,n)
 end
 
-@wrap function Z3_theory_get_parent(t::Z3_theory,n::Z3_ast,i::Uint32)
-    ccall((:Z3_theory_get_parent,"libz3"),Z3_ast,(Z3_theory,Z3_ast,Uint32),t,n,i)
+@wrap function Z3_theory_get_parent(t::Z3_theory,n::Z3_ast,i::UInt32)
+    ccall((:Z3_theory_get_parent,"libz3"),Z3_ast,(Z3_theory,Z3_ast,UInt32),t,n,i)
 end
 
 @wrap function Z3_theory_is_value(t::Z3_theory,n::Z3_ast)
@@ -1973,19 +1973,19 @@ end
 end
 
 @wrap function Z3_theory_get_num_elems(t::Z3_theory)
-    ccall((:Z3_theory_get_num_elems,"libz3"),Uint32,(Z3_theory,),t)
+    ccall((:Z3_theory_get_num_elems,"libz3"),UInt32,(Z3_theory,),t)
 end
 
-@wrap function Z3_theory_get_elem(t::Z3_theory,i::Uint32)
-    ccall((:Z3_theory_get_elem,"libz3"),Z3_ast,(Z3_theory,Uint32),t,i)
+@wrap function Z3_theory_get_elem(t::Z3_theory,i::UInt32)
+    ccall((:Z3_theory_get_elem,"libz3"),Z3_ast,(Z3_theory,UInt32),t,i)
 end
 
 @wrap function Z3_theory_get_num_apps(t::Z3_theory)
-    ccall((:Z3_theory_get_num_apps,"libz3"),Uint32,(Z3_theory,),t)
+    ccall((:Z3_theory_get_num_apps,"libz3"),UInt32,(Z3_theory,),t)
 end
 
-@wrap function Z3_theory_get_app(t::Z3_theory,i::Uint32)
-    ccall((:Z3_theory_get_app,"libz3"),Z3_ast,(Z3_theory,Uint32),t,i)
+@wrap function Z3_theory_get_app(t::Z3_theory,i::UInt32)
+    ccall((:Z3_theory_get_app,"libz3"),Z3_ast,(Z3_theory,UInt32),t,i)
 end
 
 @wrap function Z3_mk_fixedpoint(ctx::Z3_context)
@@ -2004,8 +2004,8 @@ end
     ccall((:Z3_fixedpoint_add_rule,"libz3"),Void,(Z3_context,Z3_fixedpoint,Z3_ast,Z3_symbol),ctx,d,rule,name)
 end
 
-@wrap function Z3_fixedpoint_add_fact(ctx::Z3_context,d::Z3_fixedpoint,r::Z3_func_decl,num_args::Uint32,args::Ref{Uint32})
-    ccall((:Z3_fixedpoint_add_fact,"libz3"),Void,(Z3_context,Z3_fixedpoint,Z3_func_decl,Uint32,Ref{Uint32}),ctx,d,r,num_args,args)
+@wrap function Z3_fixedpoint_add_fact(ctx::Z3_context,d::Z3_fixedpoint,r::Z3_func_decl,num_args::UInt32,args::Ref{UInt32})
+    ccall((:Z3_fixedpoint_add_fact,"libz3"),Void,(Z3_context,Z3_fixedpoint,Z3_func_decl,UInt32,Ref{UInt32}),ctx,d,r,num_args,args)
 end
 
 @wrap function Z3_fixedpoint_assert(ctx::Z3_context,d::Z3_fixedpoint,axiom::Z3_ast)
@@ -2016,8 +2016,8 @@ end
     ccall((:Z3_fixedpoint_query,"libz3"),Z3_lbool,(Z3_context,Z3_fixedpoint,Z3_ast),ctx,d,query)
 end
 
-@wrap function Z3_fixedpoint_query_relations(ctx::Z3_context,d::Z3_fixedpoint,num_relations::Uint32,relations::Ptr{Z3_func_decl})
-    ccall((:Z3_fixedpoint_query_relations,"libz3"),Z3_lbool,(Z3_context,Z3_fixedpoint,Uint32,Ptr{Z3_func_decl}),ctx,d,num_relations,relations)
+@wrap function Z3_fixedpoint_query_relations(ctx::Z3_context,d::Z3_fixedpoint,num_relations::UInt32,relations::Ptr{Z3_func_decl})
+    ccall((:Z3_fixedpoint_query_relations,"libz3"),Z3_lbool,(Z3_context,Z3_fixedpoint,UInt32,Ptr{Z3_func_decl}),ctx,d,num_relations,relations)
 end
 
 @wrap function Z3_fixedpoint_get_answer(ctx::Z3_context,d::Z3_fixedpoint)
@@ -2033,7 +2033,7 @@ end
 end
 
 @wrap function Z3_fixedpoint_get_num_levels(ctx::Z3_context,d::Z3_fixedpoint,pred::Z3_func_decl)
-    ccall((:Z3_fixedpoint_get_num_levels,"libz3"),Uint32,(Z3_context,Z3_fixedpoint,Z3_func_decl),ctx,d,pred)
+    ccall((:Z3_fixedpoint_get_num_levels,"libz3"),UInt32,(Z3_context,Z3_fixedpoint,Z3_func_decl),ctx,d,pred)
 end
 
 @wrap function Z3_fixedpoint_get_cover_delta(ctx::Z3_context,d::Z3_fixedpoint,level::Cint,pred::Z3_func_decl)
@@ -2052,8 +2052,8 @@ end
     ccall((:Z3_fixedpoint_register_relation,"libz3"),Void,(Z3_context,Z3_fixedpoint,Z3_func_decl),ctx,d,f)
 end
 
-@wrap function Z3_fixedpoint_set_predicate_representation(ctx::Z3_context,d::Z3_fixedpoint,f::Z3_func_decl,num_relations::Uint32,relation_kinds::Ptr{Z3_symbol})
-    ccall((:Z3_fixedpoint_set_predicate_representation,"libz3"),Void,(Z3_context,Z3_fixedpoint,Z3_func_decl,Uint32,Ptr{Z3_symbol}),ctx,d,f,num_relations,relation_kinds)
+@wrap function Z3_fixedpoint_set_predicate_representation(ctx::Z3_context,d::Z3_fixedpoint,f::Z3_func_decl,num_relations::UInt32,relation_kinds::Ptr{Z3_symbol})
+    ccall((:Z3_fixedpoint_set_predicate_representation,"libz3"),Void,(Z3_context,Z3_fixedpoint,Z3_func_decl,UInt32,Ptr{Z3_symbol}),ctx,d,f,num_relations,relation_kinds)
 end
 
 @wrap function Z3_fixedpoint_get_rules(ctx::Z3_context,f::Z3_fixedpoint)
@@ -2076,8 +2076,8 @@ end
     ccall((:Z3_fixedpoint_get_param_descrs,"libz3"),Z3_param_descrs,(Z3_context,Z3_fixedpoint),ctx,f)
 end
 
-@wrap function Z3_fixedpoint_to_string(ctx::Z3_context,f::Z3_fixedpoint,num_queries::Uint32,queries::Ptr{Z3_ast})
-    ccall((:Z3_fixedpoint_to_string,"libz3"),Z3_string,(Z3_context,Z3_fixedpoint,Uint32,Ptr{Z3_ast}),ctx,f,num_queries,queries)
+@wrap function Z3_fixedpoint_to_string(ctx::Z3_context,f::Z3_fixedpoint,num_queries::UInt32,queries::Ptr{Z3_ast})
+    ccall((:Z3_fixedpoint_to_string,"libz3"),Z3_string,(Z3_context,Z3_fixedpoint,UInt32,Ptr{Z3_ast}),ctx,f,num_queries,queries)
 end
 
 @wrap function Z3_fixedpoint_from_string(ctx::Z3_context,f::Z3_fixedpoint,s::Z3_string)
@@ -2121,19 +2121,19 @@ end
 end
 
 @wrap function Z3_ast_vector_size(ctx::Z3_context,v::Z3_ast_vector)
-    ccall((:Z3_ast_vector_size,"libz3"),Uint32,(Z3_context,Z3_ast_vector),ctx,v)
+    ccall((:Z3_ast_vector_size,"libz3"),UInt32,(Z3_context,Z3_ast_vector),ctx,v)
 end
 
-@wrap function Z3_ast_vector_get(ctx::Z3_context,v::Z3_ast_vector,i::Uint32)
-    ccall((:Z3_ast_vector_get,"libz3"),Z3_ast,(Z3_context,Z3_ast_vector,Uint32),ctx,v,i)
+@wrap function Z3_ast_vector_get(ctx::Z3_context,v::Z3_ast_vector,i::UInt32)
+    ccall((:Z3_ast_vector_get,"libz3"),Z3_ast,(Z3_context,Z3_ast_vector,UInt32),ctx,v,i)
 end
 
-@wrap function Z3_ast_vector_set(ctx::Z3_context,v::Z3_ast_vector,i::Uint32,a::Z3_ast)
-    ccall((:Z3_ast_vector_set,"libz3"),Void,(Z3_context,Z3_ast_vector,Uint32,Z3_ast),ctx,v,i,a)
+@wrap function Z3_ast_vector_set(ctx::Z3_context,v::Z3_ast_vector,i::UInt32,a::Z3_ast)
+    ccall((:Z3_ast_vector_set,"libz3"),Void,(Z3_context,Z3_ast_vector,UInt32,Z3_ast),ctx,v,i,a)
 end
 
-@wrap function Z3_ast_vector_resize(ctx::Z3_context,v::Z3_ast_vector,n::Uint32)
-    ccall((:Z3_ast_vector_resize,"libz3"),Void,(Z3_context,Z3_ast_vector,Uint32),ctx,v,n)
+@wrap function Z3_ast_vector_resize(ctx::Z3_context,v::Z3_ast_vector,n::UInt32)
+    ccall((:Z3_ast_vector_resize,"libz3"),Void,(Z3_context,Z3_ast_vector,UInt32),ctx,v,n)
 end
 
 @wrap function Z3_ast_vector_push(ctx::Z3_context,v::Z3_ast_vector,a::Z3_ast)
@@ -2181,7 +2181,7 @@ end
 end
 
 @wrap function Z3_ast_map_size(ctx::Z3_context,m::Z3_ast_map)
-    ccall((:Z3_ast_map_size,"libz3"),Uint32,(Z3_context,Z3_ast_map),ctx,m)
+    ccall((:Z3_ast_map_size,"libz3"),UInt32,(Z3_context,Z3_ast_map),ctx,m)
 end
 
 @wrap function Z3_ast_map_keys(ctx::Z3_context,m::Z3_ast_map)
@@ -2217,7 +2217,7 @@ end
 end
 
 @wrap function Z3_goal_depth(ctx::Z3_context,g::Z3_goal)
-    ccall((:Z3_goal_depth,"libz3"),Uint32,(Z3_context,Z3_goal),ctx,g)
+    ccall((:Z3_goal_depth,"libz3"),UInt32,(Z3_context,Z3_goal),ctx,g)
 end
 
 @wrap function Z3_goal_reset(ctx::Z3_context,g::Z3_goal)
@@ -2225,15 +2225,15 @@ end
 end
 
 @wrap function Z3_goal_size(ctx::Z3_context,g::Z3_goal)
-    ccall((:Z3_goal_size,"libz3"),Uint32,(Z3_context,Z3_goal),ctx,g)
+    ccall((:Z3_goal_size,"libz3"),UInt32,(Z3_context,Z3_goal),ctx,g)
 end
 
-@wrap function Z3_goal_formula(ctx::Z3_context,g::Z3_goal,idx::Uint32)
-    ccall((:Z3_goal_formula,"libz3"),Z3_ast,(Z3_context,Z3_goal,Uint32),ctx,g,idx)
+@wrap function Z3_goal_formula(ctx::Z3_context,g::Z3_goal,idx::UInt32)
+    ccall((:Z3_goal_formula,"libz3"),Z3_ast,(Z3_context,Z3_goal,UInt32),ctx,g,idx)
 end
 
 @wrap function Z3_goal_num_exprs(ctx::Z3_context,g::Z3_goal)
-    ccall((:Z3_goal_num_exprs,"libz3"),Uint32,(Z3_context,Z3_goal),ctx,g)
+    ccall((:Z3_goal_num_exprs,"libz3"),UInt32,(Z3_context,Z3_goal),ctx,g)
 end
 
 @wrap function Z3_goal_is_decided_sat(ctx::Z3_context,g::Z3_goal)
@@ -2284,16 +2284,16 @@ end
     ccall((:Z3_tactic_or_else,"libz3"),Z3_tactic,(Z3_context,Z3_tactic,Z3_tactic),ctx,t1,t2)
 end
 
-@wrap function Z3_tactic_par_or(ctx::Z3_context,num::Uint32,ts::Ptr{Z3_tactic})
-    ccall((:Z3_tactic_par_or,"libz3"),Z3_tactic,(Z3_context,Uint32,Ptr{Z3_tactic}),ctx,num,ts)
+@wrap function Z3_tactic_par_or(ctx::Z3_context,num::UInt32,ts::Ptr{Z3_tactic})
+    ccall((:Z3_tactic_par_or,"libz3"),Z3_tactic,(Z3_context,UInt32,Ptr{Z3_tactic}),ctx,num,ts)
 end
 
 @wrap function Z3_tactic_par_and_then(ctx::Z3_context,t1::Z3_tactic,t2::Z3_tactic)
     ccall((:Z3_tactic_par_and_then,"libz3"),Z3_tactic,(Z3_context,Z3_tactic,Z3_tactic),ctx,t1,t2)
 end
 
-@wrap function Z3_tactic_try_for(ctx::Z3_context,t::Z3_tactic,ms::Uint32)
-    ccall((:Z3_tactic_try_for,"libz3"),Z3_tactic,(Z3_context,Z3_tactic,Uint32),ctx,t,ms)
+@wrap function Z3_tactic_try_for(ctx::Z3_context,t::Z3_tactic,ms::UInt32)
+    ccall((:Z3_tactic_try_for,"libz3"),Z3_tactic,(Z3_context,Z3_tactic,UInt32),ctx,t,ms)
 end
 
 @wrap function Z3_tactic_when(ctx::Z3_context,p::Z3_probe,t::Z3_tactic)
@@ -2304,8 +2304,8 @@ end
     ccall((:Z3_tactic_cond,"libz3"),Z3_tactic,(Z3_context,Z3_probe,Z3_tactic,Z3_tactic),ctx,p,t1,t2)
 end
 
-@wrap function Z3_tactic_repeat(ctx::Z3_context,t::Z3_tactic,max::Uint32)
-    ccall((:Z3_tactic_repeat,"libz3"),Z3_tactic,(Z3_context,Z3_tactic,Uint32),ctx,t,max)
+@wrap function Z3_tactic_repeat(ctx::Z3_context,t::Z3_tactic,max::UInt32)
+    ccall((:Z3_tactic_repeat,"libz3"),Z3_tactic,(Z3_context,Z3_tactic,UInt32),ctx,t,max)
 end
 
 @wrap function Z3_tactic_skip(ctx::Z3_context)
@@ -2329,7 +2329,7 @@ end
 end
 
 @wrap function Z3_probe_const(x::Z3_context,val::Cdouble)
-    ccall((:Z3_probe_const,"libz3"),Z3_probe,(Z3_context,ctxdouble),x,val)
+    ccall((:Z3_probe_const,"libz3"),Z3_probe,(Z3_context,Cdouble),x,val)
 end
 
 @wrap function Z3_probe_lt(x::Z3_context,p1::Z3_probe,p2::Z3_probe)
@@ -2365,19 +2365,19 @@ end
 end
 
 @wrap function Z3_get_num_tactics(ctx::Z3_context)
-    ccall((:Z3_get_num_tactics,"libz3"),Uint32,(Z3_context,),ctx)
+    ccall((:Z3_get_num_tactics,"libz3"),UInt32,(Z3_context,),ctx)
 end
 
-@wrap function Z3_get_tactic_name(ctx::Z3_context,i::Uint32)
-    ccall((:Z3_get_tactic_name,"libz3"),Z3_string,(Z3_context,Uint32),ctx,i)
+@wrap function Z3_get_tactic_name(ctx::Z3_context,i::UInt32)
+    ccall((:Z3_get_tactic_name,"libz3"),Z3_string,(Z3_context,UInt32),ctx,i)
 end
 
 @wrap function Z3_get_num_probes(ctx::Z3_context)
-    ccall((:Z3_get_num_probes,"libz3"),Uint32,(Z3_context,),ctx)
+    ccall((:Z3_get_num_probes,"libz3"),UInt32,(Z3_context,),ctx)
 end
 
-@wrap function Z3_get_probe_name(ctx::Z3_context,i::Uint32)
-    ccall((:Z3_get_probe_name,"libz3"),Z3_string,(Z3_context,Uint32),ctx,i)
+@wrap function Z3_get_probe_name(ctx::Z3_context,i::UInt32)
+    ccall((:Z3_get_probe_name,"libz3"),Z3_string,(Z3_context,UInt32),ctx,i)
 end
 
 @wrap function Z3_tactic_get_help(ctx::Z3_context,t::Z3_tactic)
@@ -2397,7 +2397,7 @@ end
 end
 
 @wrap function Z3_probe_apply(ctx::Z3_context,p::Z3_probe,g::Z3_goal)
-    ccall((:Z3_probe_apply,"libz3"),ctxdouble,(Z3_context,Z3_probe,Z3_goal),ctx,p,g)
+    ccall((:Z3_probe_apply,"libz3"),Cdouble,(Z3_context,Z3_probe,Z3_goal),ctx,p,g)
 end
 
 @wrap function Z3_tactic_apply(ctx::Z3_context,t::Z3_tactic,g::Z3_goal)
@@ -2421,15 +2421,15 @@ end
 end
 
 @wrap function Z3_apply_result_get_num_subgoals(ctx::Z3_context,r::Z3_apply_result)
-    ccall((:Z3_apply_result_get_num_subgoals,"libz3"),Uint32,(Z3_context,Z3_apply_result),ctx,r)
+    ccall((:Z3_apply_result_get_num_subgoals,"libz3"),UInt32,(Z3_context,Z3_apply_result),ctx,r)
 end
 
-@wrap function Z3_apply_result_get_subgoal(ctx::Z3_context,r::Z3_apply_result,i::Uint32)
-    ccall((:Z3_apply_result_get_subgoal,"libz3"),Z3_goal,(Z3_context,Z3_apply_result,Uint32),ctx,r,i)
+@wrap function Z3_apply_result_get_subgoal(ctx::Z3_context,r::Z3_apply_result,i::UInt32)
+    ccall((:Z3_apply_result_get_subgoal,"libz3"),Z3_goal,(Z3_context,Z3_apply_result,UInt32),ctx,r,i)
 end
 
-@wrap function Z3_apply_result_convert_model(ctx::Z3_context,r::Z3_apply_result,i::Uint32,m::Z3_model)
-    ccall((:Z3_apply_result_convert_model,"libz3"),Z3_model,(Z3_context,Z3_apply_result,Uint32,Z3_model),ctx,r,i,m)
+@wrap function Z3_apply_result_convert_model(ctx::Z3_context,r::Z3_apply_result,i::UInt32,m::Z3_model)
+    ccall((:Z3_apply_result_convert_model,"libz3"),Z3_model,(Z3_context,Z3_apply_result,UInt32,Z3_model),ctx,r,i,m)
 end
 
 @wrap function Z3_mk_solver(ctx::Z3_context)
@@ -2472,8 +2472,8 @@ end
     ccall((:Z3_solver_push,"libz3"),Void,(Z3_context,Z3_solver),ctx,s)
 end
 
-@wrap function Z3_solver_pop(ctx::Z3_context,s::Z3_solver,n::Uint32)
-    ccall((:Z3_solver_pop,"libz3"),Void,(Z3_context,Z3_solver,Uint32),ctx,s,n)
+@wrap function Z3_solver_pop(ctx::Z3_context,s::Z3_solver,n::UInt32)
+    ccall((:Z3_solver_pop,"libz3"),Void,(Z3_context,Z3_solver,UInt32),ctx,s,n)
 end
 
 @wrap function Z3_solver_reset(ctx::Z3_context,s::Z3_solver)
@@ -2481,7 +2481,7 @@ end
 end
 
 @wrap function Z3_solver_get_num_scopes(ctx::Z3_context,s::Z3_solver)
-    ccall((:Z3_solver_get_num_scopes,"libz3"),Uint32,(Z3_context,Z3_solver),ctx,s)
+    ccall((:Z3_solver_get_num_scopes,"libz3"),UInt32,(Z3_context,Z3_solver),ctx,s)
 end
 
 @wrap function Z3_solver_assert(ctx::Z3_context,s::Z3_solver,a::Z3_ast)
@@ -2500,8 +2500,8 @@ end
     ccall((:Z3_solver_check,"libz3"),Z3_lbool,(Z3_context,Z3_solver),ctx,s)
 end
 
-@wrap function Z3_solver_check_assumptions(ctx::Z3_context,s::Z3_solver,num_assumptions::Uint32,assumptions::Ptr{Z3_ast})
-    ccall((:Z3_solver_check_assumptions,"libz3"),Z3_lbool,(Z3_context,Z3_solver,Uint32,Ptr{Z3_ast}),ctx,s,num_assumptions,assumptions)
+@wrap function Z3_solver_check_assumptions(ctx::Z3_context,s::Z3_solver,num_assumptions::UInt32,assumptions::Ptr{Z3_ast})
+    ccall((:Z3_solver_check_assumptions,"libz3"),Z3_lbool,(Z3_context,Z3_solver,UInt32,Ptr{Z3_ast}),ctx,s,num_assumptions,assumptions)
 end
 
 @wrap function Z3_solver_get_model(ctx::Z3_context,s::Z3_solver)
@@ -2541,31 +2541,31 @@ end
 end
 
 @wrap function Z3_stats_size(ctx::Z3_context,s::Z3_stats)
-    ccall((:Z3_stats_size,"libz3"),Uint32,(Z3_context,Z3_stats),ctx,s)
+    ccall((:Z3_stats_size,"libz3"),UInt32,(Z3_context,Z3_stats),ctx,s)
 end
 
-@wrap function Z3_stats_get_key(ctx::Z3_context,s::Z3_stats,idx::Uint32)
-    ccall((:Z3_stats_get_key,"libz3"),Z3_string,(Z3_context,Z3_stats,Uint32),ctx,s,idx)
+@wrap function Z3_stats_get_key(ctx::Z3_context,s::Z3_stats,idx::UInt32)
+    ccall((:Z3_stats_get_key,"libz3"),Z3_string,(Z3_context,Z3_stats,UInt32),ctx,s,idx)
 end
 
-@wrap function Z3_stats_is_uint(ctx::Z3_context,s::Z3_stats,idx::Uint32)
-    ccall((:Z3_stats_is_uint,"libz3"),Z3_bool,(Z3_context,Z3_stats,Uint32),ctx,s,idx)
+@wrap function Z3_stats_is_uint(ctx::Z3_context,s::Z3_stats,idx::UInt32)
+    ccall((:Z3_stats_is_uint,"libz3"),Z3_bool,(Z3_context,Z3_stats,UInt32),ctx,s,idx)
 end
 
-@wrap function Z3_stats_is_double(ctx::Z3_context,s::Z3_stats,idx::Uint32)
-    ccall((:Z3_stats_is_double,"libz3"),Z3_bool,(Z3_context,Z3_stats,Uint32),ctx,s,idx)
+@wrap function Z3_stats_is_double(ctx::Z3_context,s::Z3_stats,idx::UInt32)
+    ccall((:Z3_stats_is_double,"libz3"),Z3_bool,(Z3_context,Z3_stats,UInt32),ctx,s,idx)
 end
 
-@wrap function Z3_stats_get_uint_value(ctx::Z3_context,s::Z3_stats,idx::Uint32)
-    ccall((:Z3_stats_get_uint_value,"libz3"),Uint32,(Z3_context,Z3_stats,Uint32),ctx,s,idx)
+@wrap function Z3_stats_get_uint_value(ctx::Z3_context,s::Z3_stats,idx::UInt32)
+    ccall((:Z3_stats_get_uint_value,"libz3"),UInt32,(Z3_context,Z3_stats,UInt32),ctx,s,idx)
 end
 
-@wrap function Z3_stats_get_double_value(ctx::Z3_context,s::Z3_stats,idx::Uint32)
-    ccall((:Z3_stats_get_double_value,"libz3"),ctxdouble,(Z3_context,Z3_stats,Uint32),ctx,s,idx)
+@wrap function Z3_stats_get_double_value(ctx::Z3_context,s::Z3_stats,idx::UInt32)
+    ccall((:Z3_stats_get_double_value,"libz3"),Cdouble,(Z3_context,Z3_stats,UInt32),ctx,s,idx)
 end
 
-@wrap function Z3_mk_injective_function(ctx::Z3_context,s::Z3_symbol,domain_size::Uint32,domain::Ptr{Z3_sort},range::Z3_sort)
-    ccall((:Z3_mk_injective_function,"libz3"),Z3_func_decl,(Z3_context,Z3_symbol,Uint32,Ptr{Z3_sort},Z3_sort),ctx,s,domain_size,domain,range)
+@wrap function Z3_mk_injective_function(ctx::Z3_context,s::Z3_symbol,domain_size::UInt32,domain::Ptr{Z3_sort},range::Z3_sort)
+    ccall((:Z3_mk_injective_function,"libz3"),Z3_func_decl,(Z3_context,Z3_symbol,UInt32,Ptr{Z3_sort},Z3_sort),ctx,s,domain_size,domain,range)
 end
 
 @wrap function Z3_set_logic(ctx::Z3_context,logic::Z3_string)
@@ -2576,16 +2576,16 @@ end
     ccall((:Z3_push,"libz3"),Void,(Z3_context,),ctx)
 end
 
-@wrap function Z3_pop(ctx::Z3_context,num_scopes::Uint32)
-    ccall((:Z3_pop,"libz3"),Void,(Z3_context,Uint32),ctx,num_scopes)
+@wrap function Z3_pop(ctx::Z3_context,num_scopes::UInt32)
+    ccall((:Z3_pop,"libz3"),Void,(Z3_context,UInt32),ctx,num_scopes)
 end
 
 @wrap function Z3_get_num_scopes(ctx::Z3_context)
-    ccall((:Z3_get_num_scopes,"libz3"),Uint32,(Z3_context,),ctx)
+    ccall((:Z3_get_num_scopes,"libz3"),UInt32,(Z3_context,),ctx)
 end
 
-@wrap function Z3_persist_ast(ctx::Z3_context,a::Z3_ast,num_scopes::Uint32)
-    ccall((:Z3_persist_ast,"libz3"),Void,(Z3_context,Z3_ast,Uint32),ctx,a,num_scopes)
+@wrap function Z3_persist_ast(ctx::Z3_context,a::Z3_ast,num_scopes::UInt32)
+    ccall((:Z3_persist_ast,"libz3"),Void,(Z3_context,Z3_ast,UInt32),ctx,a,num_scopes)
 end
 
 @wrap function Z3_assert_cnstr(ctx::Z3_context,a::Z3_ast)
@@ -2600,12 +2600,12 @@ end
     ccall((:Z3_check,"libz3"),Z3_lbool,(Z3_context,),ctx)
 end
 
-@wrap function Z3_check_assumptions(ctx::Z3_context,num_assumptions::Uint32,assumptions::Ptr{Z3_ast},m::Ptr{Z3_model},proof::Ptr{Z3_ast},ctxore_size::Ref{Uint32},ctxore::Ptr{Z3_ast})
-    ccall((:Z3_check_assumptions,"libz3"),Z3_lbool,(Z3_context,Uint32,Ptr{Z3_ast},Ptr{Z3_model},Ptr{Z3_ast},Ref{Uint32},Ptr{Z3_ast}),ctx,num_assumptions,assumptions,m,proof,ctxore_size,ctxore)
+@wrap function Z3_check_assumptions(ctx::Z3_context,num_assumptions::UInt32,assumptions::Ptr{Z3_ast},m::Ptr{Z3_model},proof::Ptr{Z3_ast},ctxore_size::Ref{UInt32},ctxore::Ptr{Z3_ast})
+    ccall((:Z3_check_assumptions,"libz3"),Z3_lbool,(Z3_context,UInt32,Ptr{Z3_ast},Ptr{Z3_model},Ptr{Z3_ast},Ref{UInt32},Ptr{Z3_ast}),ctx,num_assumptions,assumptions,m,proof,ctxore_size,ctxore)
 end
 
-@wrap function Z3_get_implied_equalities(ctx::Z3_context,s::Z3_solver,num_terms::Uint32,terms::Ptr{Z3_ast},ctxlass_ids::Ref{Uint32})
-    ccall((:Z3_get_implied_equalities,"libz3"),Z3_lbool,(Z3_context,Z3_solver,Uint32,Ptr{Z3_ast},Ref{Uint32}),ctx,s,num_terms,terms,ctxlass_ids)
+@wrap function Z3_get_implied_equalities(ctx::Z3_context,s::Z3_solver,num_terms::UInt32,terms::Ptr{Z3_ast},ctxlass_ids::Ref{UInt32})
+    ccall((:Z3_get_implied_equalities,"libz3"),Z3_lbool,(Z3_context,Z3_solver,UInt32,Ptr{Z3_ast},Ref{UInt32}),ctx,s,num_terms,terms,ctxlass_ids)
 end
 
 @wrap function Z3_del_model(ctx::Z3_context,m::Z3_model)
@@ -2641,19 +2641,19 @@ end
 end
 
 @wrap function Z3_get_num_literals(ctx::Z3_context,lbls::Z3_literals)
-    ccall((:Z3_get_num_literals,"libz3"),Uint32,(Z3_context,Z3_literals),ctx,lbls)
+    ccall((:Z3_get_num_literals,"libz3"),UInt32,(Z3_context,Z3_literals),ctx,lbls)
 end
 
-@wrap function Z3_get_label_symbol(ctx::Z3_context,lbls::Z3_literals,idx::Uint32)
-    ccall((:Z3_get_label_symbol,"libz3"),Z3_symbol,(Z3_context,Z3_literals,Uint32),ctx,lbls,idx)
+@wrap function Z3_get_label_symbol(ctx::Z3_context,lbls::Z3_literals,idx::UInt32)
+    ccall((:Z3_get_label_symbol,"libz3"),Z3_symbol,(Z3_context,Z3_literals,UInt32),ctx,lbls,idx)
 end
 
-@wrap function Z3_get_literal(ctx::Z3_context,lbls::Z3_literals,idx::Uint32)
-    ccall((:Z3_get_literal,"libz3"),Z3_ast,(Z3_context,Z3_literals,Uint32),ctx,lbls,idx)
+@wrap function Z3_get_literal(ctx::Z3_context,lbls::Z3_literals,idx::UInt32)
+    ccall((:Z3_get_literal,"libz3"),Z3_ast,(Z3_context,Z3_literals,UInt32),ctx,lbls,idx)
 end
 
-@wrap function Z3_disable_literal(ctx::Z3_context,lbls::Z3_literals,idx::Uint32)
-    ccall((:Z3_disable_literal,"libz3"),Void,(Z3_context,Z3_literals,Uint32),ctx,lbls,idx)
+@wrap function Z3_disable_literal(ctx::Z3_context,lbls::Z3_literals,idx::UInt32)
+    ccall((:Z3_disable_literal,"libz3"),Void,(Z3_context,Z3_literals,UInt32),ctx,lbls,idx)
 end
 
 @wrap function Z3_block_literals(ctx::Z3_context,lbls::Z3_literals)
@@ -2661,51 +2661,51 @@ end
 end
 
 @wrap function Z3_get_model_num_constants(ctx::Z3_context,m::Z3_model)
-    ccall((:Z3_get_model_num_constants,"libz3"),Uint32,(Z3_context,Z3_model),ctx,m)
+    ccall((:Z3_get_model_num_constants,"libz3"),UInt32,(Z3_context,Z3_model),ctx,m)
 end
 
-@wrap function Z3_get_model_constant(ctx::Z3_context,m::Z3_model,i::Uint32)
-    ccall((:Z3_get_model_constant,"libz3"),Z3_func_decl,(Z3_context,Z3_model,Uint32),ctx,m,i)
+@wrap function Z3_get_model_constant(ctx::Z3_context,m::Z3_model,i::UInt32)
+    ccall((:Z3_get_model_constant,"libz3"),Z3_func_decl,(Z3_context,Z3_model,UInt32),ctx,m,i)
 end
 
 @wrap function Z3_get_model_num_funcs(ctx::Z3_context,m::Z3_model)
-    ccall((:Z3_get_model_num_funcs,"libz3"),Uint32,(Z3_context,Z3_model),ctx,m)
+    ccall((:Z3_get_model_num_funcs,"libz3"),UInt32,(Z3_context,Z3_model),ctx,m)
 end
 
-@wrap function Z3_get_model_func_decl(ctx::Z3_context,m::Z3_model,i::Uint32)
-    ccall((:Z3_get_model_func_decl,"libz3"),Z3_func_decl,(Z3_context,Z3_model,Uint32),ctx,m,i)
+@wrap function Z3_get_model_func_decl(ctx::Z3_context,m::Z3_model,i::UInt32)
+    ccall((:Z3_get_model_func_decl,"libz3"),Z3_func_decl,(Z3_context,Z3_model,UInt32),ctx,m,i)
 end
 
 @wrap function Z3_eval_func_decl(ctx::Z3_context,m::Z3_model,decl::Z3_func_decl,v::Ptr{Z3_ast})
     ccall((:Z3_eval_func_decl,"libz3"),Z3_bool,(Z3_context,Z3_model,Z3_func_decl,Ptr{Z3_ast}),ctx,m,decl,v)
 end
 
-@wrap function Z3_is_array_value(ctx::Z3_context,m::Z3_model,v::Z3_ast,num_entries::Ref{Uint32})
-    ccall((:Z3_is_array_value,"libz3"),Z3_bool,(Z3_context,Z3_model,Z3_ast,Ref{Uint32}),ctx,m,v,num_entries)
+@wrap function Z3_is_array_value(ctx::Z3_context,m::Z3_model,v::Z3_ast,num_entries::Ref{UInt32})
+    ccall((:Z3_is_array_value,"libz3"),Z3_bool,(Z3_context,Z3_model,Z3_ast,Ref{UInt32}),ctx,m,v,num_entries)
 end
 
-@wrap function Z3_get_array_value(ctx::Z3_context,m::Z3_model,v::Z3_ast,num_entries::Uint32,indices::Ptr{Z3_ast},values::Ptr{Z3_ast},else_value::Ptr{Z3_ast})
-    ccall((:Z3_get_array_value,"libz3"),Void,(Z3_context,Z3_model,Z3_ast,Uint32,Ptr{Z3_ast},Ptr{Z3_ast},Ptr{Z3_ast}),ctx,m,v,num_entries,indices,values,else_value)
+@wrap function Z3_get_array_value(ctx::Z3_context,m::Z3_model,v::Z3_ast,num_entries::UInt32,indices::Ptr{Z3_ast},values::Ptr{Z3_ast},else_value::Ptr{Z3_ast})
+    ccall((:Z3_get_array_value,"libz3"),Void,(Z3_context,Z3_model,Z3_ast,UInt32,Ptr{Z3_ast},Ptr{Z3_ast},Ptr{Z3_ast}),ctx,m,v,num_entries,indices,values,else_value)
 end
 
-@wrap function Z3_get_model_func_else(ctx::Z3_context,m::Z3_model,i::Uint32)
-    ccall((:Z3_get_model_func_else,"libz3"),Z3_ast,(Z3_context,Z3_model,Uint32),ctx,m,i)
+@wrap function Z3_get_model_func_else(ctx::Z3_context,m::Z3_model,i::UInt32)
+    ccall((:Z3_get_model_func_else,"libz3"),Z3_ast,(Z3_context,Z3_model,UInt32),ctx,m,i)
 end
 
-@wrap function Z3_get_model_func_num_entries(ctx::Z3_context,m::Z3_model,i::Uint32)
-    ccall((:Z3_get_model_func_num_entries,"libz3"),Uint32,(Z3_context,Z3_model,Uint32),ctx,m,i)
+@wrap function Z3_get_model_func_num_entries(ctx::Z3_context,m::Z3_model,i::UInt32)
+    ccall((:Z3_get_model_func_num_entries,"libz3"),UInt32,(Z3_context,Z3_model,UInt32),ctx,m,i)
 end
 
-@wrap function Z3_get_model_func_entry_num_args(ctx::Z3_context,m::Z3_model,i::Uint32,j::Uint32)
-    ccall((:Z3_get_model_func_entry_num_args,"libz3"),Uint32,(Z3_context,Z3_model,Uint32,Uint32),ctx,m,i,j)
+@wrap function Z3_get_model_func_entry_num_args(ctx::Z3_context,m::Z3_model,i::UInt32,j::UInt32)
+    ccall((:Z3_get_model_func_entry_num_args,"libz3"),UInt32,(Z3_context,Z3_model,UInt32,UInt32),ctx,m,i,j)
 end
 
-@wrap function Z3_get_model_func_entry_arg(ctx::Z3_context,m::Z3_model,i::Uint32,j::Uint32,k::Uint32)
-    ccall((:Z3_get_model_func_entry_arg,"libz3"),Z3_ast,(Z3_context,Z3_model,Uint32,Uint32,Uint32),ctx,m,i,j,k)
+@wrap function Z3_get_model_func_entry_arg(ctx::Z3_context,m::Z3_model,i::UInt32,j::UInt32,k::UInt32)
+    ccall((:Z3_get_model_func_entry_arg,"libz3"),Z3_ast,(Z3_context,Z3_model,UInt32,UInt32,UInt32),ctx,m,i,j,k)
 end
 
-@wrap function Z3_get_model_func_entry_value(ctx::Z3_context,m::Z3_model,i::Uint32,j::Uint32)
-    ccall((:Z3_get_model_func_entry_value,"libz3"),Z3_ast,(Z3_context,Z3_model,Uint32,Uint32),ctx,m,i,j)
+@wrap function Z3_get_model_func_entry_value(ctx::Z3_context,m::Z3_model,i::UInt32,j::UInt32)
+    ccall((:Z3_get_model_func_entry_value,"libz3"),Z3_ast,(Z3_context,Z3_model,UInt32,UInt32),ctx,m,i,j)
 end
 
 #Fix me macro is making this eval so its clashing with Julia eval, have a better way to parse
@@ -2713,8 +2713,8 @@ end
     ccall((:Z3_eval,"libz3"),Z3_bool,(Z3_context,Z3_model,Z3_ast,Ptr{Z3_ast}),ctx,m,t,v)
 end
 
-@wrap function Z3_eval_decl(ctx::Z3_context,m::Z3_model,d::Z3_func_decl,num_args::Uint32,args::Ptr{Z3_ast},v::Ptr{Z3_ast})
-    ccall((:Z3_eval_decl,"libz3"),Z3_bool,(Z3_context,Z3_model,Z3_func_decl,Uint32,Ptr{Z3_ast},Ptr{Z3_ast}),ctx,m,d,num_args,args,v)
+@wrap function Z3_eval_decl(ctx::Z3_context,m::Z3_model,d::Z3_func_decl,num_args::UInt32,args::Ptr{Z3_ast},v::Ptr{Z3_ast})
+    ccall((:Z3_eval_decl,"libz3"),Z3_bool,(Z3_context,Z3_model,Z3_func_decl,UInt32,Ptr{Z3_ast},Ptr{Z3_ast}),ctx,m,d,num_args,args,v)
 end
 
 @wrap function Z3_context_to_string(ctx::Z3_context)

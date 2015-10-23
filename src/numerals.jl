@@ -69,4 +69,4 @@ end
 # Defaults
 NumeralAst(v::Integer; ctx::Context = global_context()) = NumeralAst(Integer, v; ctx = ctx)
 NumeralAst(v::Real; ctx::Context = global_context()) = NumeralAst(Real, v; ctx = ctx)
-NumeralAst(v::String; ctx::Context = global_context()) = NumeralAst(Real, v; ctx = ctx)
+NumeralAst(v::ASCIIString; ctx::Context = global_context()) = NumeralAst(Real, v; ctx = ctx)

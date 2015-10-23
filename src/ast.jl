@@ -30,19 +30,19 @@ function mk_var(ctx::Context, name::Integer, ty::Sort)
 end
 
 "Create a variable using the given name"
-function mk_var(::Type{Integer}, ctx::Context, name::Union(ASCIIString, Integer))
+function mk_var(::Type{Integer}, ctx::Context, name::Union{ASCIIString, Integer})
   ty = mk_int_sort(ctx)
   mk_var(ctx, name, ty)
 end
 
 "Create a variable using the given name"
-function mk_var(::Type{Real}, ctx::Context, name::Union(ASCIIString, Integer))
+function mk_var(::Type{Real}, ctx::Context, name::Union{ASCIIString, Integer})
   ty = mk_real_sort(ctx)
   mk_var(ctx, name, ty)
 end
 
 "Create a variable using the given name"
-function mk_var(::Type{Bool}, ctx::Context, name::Union(ASCIIString, Integer))
+function mk_var(::Type{Bool}, ctx::Context, name::Union{ASCIIString, Integer})
   ty = mk_bool_sort(ctx)
   mk_var(ctx, name, ty)
 end
@@ -59,15 +59,15 @@ end
 # Constant op Real -> convert(Real, Constant) op Real
 #
 
-RealAst = Union(RealVarAst{Real}, VarAst{Real}, AppAst{Real}, NumeralAst{Real})
-IntegerAst = Union(RealVarAst{Integer}, VarAst{Integer}, AppAst{Integer}, NumeralAst{Integer})
-BoolAst = Union(RealVarAst{Bool}, VarAst{Bool}, AppAst{Bool}, NumeralAst{Bool})
+RealAst = Union{RealVarAst{Real}, VarAst{Real}, AppAst{Real}, NumeralAst{Real}}
+IntegerAst = Union{RealVarAst{Integer}, VarAst{Integer}, AppAst{Integer}, NumeralAst{Integer}}
+BoolAst = Union{RealVarAst{Bool}, VarAst{Bool}, AppAst{Bool}, NumeralAst{Bool}}
 
-LeafInteger = Union(Float64, Int64,  Int128, Int16, Int32, Int64, Int8, Int128,
-  Int16, Int32, Int64, Int8, Bool, BigInt)
+LeafInteger = Union{Float64, Int64,  Int128, Int16, Int32, Int64, Int8, Int128,
+  Int16, Int32, Int64, Int8, Bool, BigInt}
 
-LeafFloat = Union(Base.MPFR.BigFloat, Float16, Float32, Float64)
-LeafReal = Union(LeafFloat, LeafInteger, Rational)
+LeafFloat = Union{Base.MPFR.BigFloat, Float16, Float32, Float64}
+LeafReal = Union{LeafFloat, LeafInteger, Rational}
 
 ## Conversion Functions
 to_real(x::IntegerAst; ctx::Context=global_context()) = AppAst{Real}(mk_int2real(ctx, x))
@@ -201,8 +201,8 @@ for (op, func) in integer_integer_integer
 end
 
 
-bool_bool_bool = @compat Dict(:($) => mk_xor,
-  :implies => mk_implies, :mk_iff => :biimplies)
+bool_bool_bool = @compat Dict{Symbol, Function}(:($) => mk_xor,
+  :implies => mk_implies, :biimplies => mk_iff)
 for (op, func) in bool_bool_bool
   @eval ($op)(x::BoolAst, y::BoolAst; ctx::Context = global_context()) =
     AppAst{Bool}($func(ctx, x, y))

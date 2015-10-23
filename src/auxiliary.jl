@@ -1,7 +1,7 @@
 macro LOG_MSG(msg) Z3_append_log(msg) end
 
 "exit gracefully in case of error."
-function exitf(x::ASCIIString)
+function exitf(message::ASCIIString)
   fprintf(STDERR,"BUG: %s.\n", message);
   exit(1);
 end
@@ -10,12 +10,12 @@ end
 function unreachable()
   error("unreachable code was reached")
 end
-
-"Simpler error handler"
-function error_handler(ctx::Z3_context, e::Z3_error_code)
-  printf("Error code: %d\n", e)
-  error("incorrect use of Z3")
-end
+#
+# "Simpler error handler"
+# function error_handler(ctx::Z3_context, e::Z3_error_code)
+#   printf("Error code: %d\n", e)
+#   error("incorrect use of Z3")
+# end
 
 """
 Enable model construction. Other configuration parameters can be passed in the

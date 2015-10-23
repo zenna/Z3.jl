@@ -23,4 +23,4 @@ script:
   - cd ../install/lib/
   - export LD_LIBRARY_PATH=`pwd`
   - cd ../../../..
-  - julia -e 'Pkg.init(); Pkg.clone(pwd()); Pkg.test("z3")'
+  - julia -e 'Pkg.init(); Pkg.clone(pwd()); Pkg.test("Z3")'
