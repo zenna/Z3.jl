@@ -45,6 +45,7 @@ export Var,
   is_int,
   biimplies,
   add!,
+  check,
   model
 
 #Z3 Types

@@ -2596,9 +2596,10 @@ end
     ccall((:Z3_check_and_get_model,"libz3"),Z3_lbool,(Z3_context,Ptr{Z3_model}),ctx,m)
 end
 
-@wrap function Z3_check(ctx::Z3_context)
-    ccall((:Z3_check,"libz3"),Z3_lbool,(Z3_context,),ctx)
-end
+# Deprecated
+# @wrap function Z3_check(ctx::Z3_context)
+#     ccall((:Z3_check,"libz3"),Z3_lbool,(Z3_context,),ctx)
+# end
 
 @wrap function Z3_check_assumptions(ctx::Z3_context,num_assumptions::UInt32,assumptions::Ptr{Z3_ast},m::Ptr{Z3_model},proof::Ptr{Z3_ast},ctxore_size::Ref{UInt32},ctxore::Ptr{Z3_ast})
     ccall((:Z3_check_assumptions,"libz3"),Z3_lbool,(Z3_context,UInt32,Ptr{Z3_ast},Ptr{Z3_model},Ptr{Z3_ast},Ref{UInt32},Ptr{Z3_ast}),ctx,num_assumptions,assumptions,m,proof,ctxore_size,ctxore)

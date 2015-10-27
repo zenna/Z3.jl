@@ -15,19 +15,19 @@ function global_ctx()
 end
 
 "Assign the global context to `ctx`"
-function set_global_ctx(ctx::Context)
+function set_global_ctx!(ctx::Context)
   global default_global_ctx
   default_global_ctx = ctx
 end
 
 "Reset the global context"
-function reset_global_ctx()
+function reset_global_ctx!()
   delete_ctx!(global_ctx())
   create_global_ctx!(l)
 end
 
 "Disable use of global ctx, useful for debugging"
-function disable_global_ctx()
+function disable_global_ctx!()
   @eval global_ctx() =  error("global_ctx_disabled")
 end
 

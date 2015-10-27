@@ -11,7 +11,7 @@ create_global_solver(ctx = global_ctx()) =
   (global default_global_solver; default_global_solver = Solver(ctx=ctx))
 
 function global_solver()
-  # error("global_ctx_disabled")
+  # error("global solver disabled")
   (global default_global_solver; default_global_solver)
 end
 
@@ -28,4 +28,9 @@ end
 function add!(x::BoolAst, ctx::Context=global_ctx(),
                           slv::Solver=global_solver())
   solver_assert(ctx, slv, x)
+end
+
+function check(ctx::Context=global_ctx(),
+               slv::Solver=global_solver())
+  solver_check(ctx, slv)
 end
