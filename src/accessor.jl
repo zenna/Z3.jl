@@ -16,9 +16,9 @@ function model{T<:Integer}(
     ::Type{T},
     x::RealVarAst;
     ctx::Context=global_ctx(),
-    s::Solver=global_solver())
+    solver::Solver=global_solver())
 
-  m = solver_get_model(ctx, s)
+  m = solver_get_model(ctx, solver)
   func_decl = model_get_const_decl(ctx, m, UInt32(x.i))
   interp_ast = model_get_const_interp(ctx, m, func_decl)
   result_int = Ref{Int64}(0)
@@ -30,9 +30,9 @@ function model(
     ::Type{Rational},
     x::RealVarAst;
     ctx::Context=global_ctx(),
-    s::Solver=global_solver())
+    solver::Solver=global_solver())
 
-  m = solver_get_model(ctx, s)
+  m = solver_get_model(ctx, solver)
   func_decl = model_get_const_decl(ctx, m, UInt32(x.i))
   interp_ast = model_get_const_interp(ctx, m, func_decl)
   result_num = Ref{Int64}(0)
@@ -45,9 +45,9 @@ function model(
     ::Type{ASCIIString},
     x::RealVarAst;
     ctx::Context=global_ctx(),
-    s::Solver=global_solver())
+    solver::Solver=global_solver())
 
-  m = solver_get_model(ctx, s)
+  m = solver_get_model(ctx, solver)
   func_decl = model_get_const_decl(ctx, m, UInt32(x.i))
   interp_ast = model_get_const_interp(ctx, m, func_decl)
   str::ASCIIString = get_numeral_string(ctx, interp_ast,)
@@ -56,9 +56,9 @@ end
 function model(
     ::Type{BigFloat},x::RealVarAst;
     ctx::Context=global_ctx(),
-    s::Solver=global_solver())
+    solver::Solver=global_solver())
 
-  model_str = model(ASCIIString, x; s=s, ctx=ctx)
+  model_str = model(ASCIIString, x; solver=solver, ctx=ctx)
   parse(BigFloat, model_str)
 end
 
@@ -66,9 +66,9 @@ function model(
     ::Type{BigInt},
     x::RealVarAst;
     ctx::Context=global_ctx(),
-    s::Solver=global_solver())
-    
-  model_str = model(ASCIIString, s, x; ctx=ctx)
+    solver::Solver=global_solver())
+
+  model_str = model(ASCIIString, solver, x; ctx=ctx)
   parse(BigInt, model_str)
 end
 

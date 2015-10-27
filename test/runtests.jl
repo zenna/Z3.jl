@@ -1,4 +1,5 @@
 tests = ["simple",
+         "model",
          "findmodel",
          "numerals"]
 
