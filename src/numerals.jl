@@ -16,23 +16,31 @@ mk_sort(::Type{Bool}) = BoolSort
 mk_sort(::Type{Real}) = RealSort
 mk_sort(::Type{Integer}) = IntSort
 
-function NumeralAst{T <: IntegerTypes}(::Type{T}, v::Int32;
-                   ctx::Context = global_context())
+function NumeralAst{T <: IntegerTypes}(
+    ::Type{T},
+    v::Int32;
+    ctx::Context = global_context())
   NumeralAst{T}(mk_int(ctx, v, mk_sort(T)(ctx=ctx)))
 end
 
-function NumeralAst{T <: IntegerTypes}(::Type{T}, v::Int64;
-                   ctx::Context = global_context())
+function NumeralAst{T <: IntegerTypes}(
+    ::Type{T},
+    v::Int64;
+    ctx::Context = global_context())
   NumeralAst{T}(mk_int64(ctx, v, mk_sort(T)(ctx=ctx)))
 end
 
-function NumeralAst{T <: IntegerTypes}(::Type{T}, v::UInt32;
-                   ctx::Context = global_context())
+function NumeralAst{T <: IntegerTypes}(
+    ::Type{T},
+    v::UInt32;
+    ctx::Context = global_context())
   NumeralAst{T}(mk_unsigned_int(ctx, v, mk_sort(T)(ctx=ctx)))
 end
 
-function NumeralAst{T <: IntegerTypes}(::Type{T}, v::UInt64;
-                   ctx::Context = global_context())
+function NumeralAst{T <: IntegerTypes}(
+    ::Type{T},
+    v::UInt64;
+    ctx::Context = global_context())
   NumeralAst{T}(mk_unsigned_int64(ctx, v, mk_sort(T)(ctx=ctx)))
 end
 

@@ -204,7 +204,7 @@ end
 # `forall (x_0, ..., x_n) finv(f(x_0, ..., x_i, ..., x_{n-1})) = x_i`
 #
 # Where, \c finv is a fresh function declaration."""
-# function assert_inj_axiom(ctx::Z3_context, f::Z3_func_decl, i::Uint32)
+# function assert_inj_axiom(ctx::Z3_context, f::Z3_func_decl, i::UInt32)
 #   unsigned sz, j;
 #   Z3_sort finv_domain, finv_range;
 #   Z3_func_decl finv;
@@ -308,7 +308,7 @@ end
 # other fields have the value of the respective field of \c t.
 # <tt>update(t, i, new_val)</tt> is equivalent to
 # <tt>mk_tuple(proj_0(t), ..., new_val, ..., proj_n(t))</tt>"""
-# function mk_tuple_update(ctx::Z3_context, t::Z3_ast, i::Uint32, new_val::Z3_ast)
+# function mk_tuple_update(ctx::Z3_context, t::Z3_ast, i::UInt32, new_val::Z3_ast)
 #     Z3_sort         ty;
 #     Z3_func_decl   mk_tuple_decl;
 #     unsigned            num_fields, j;
@@ -384,7 +384,7 @@ end
 #   		if Z3_get_datatype_sort_num_constructors(c, ty) != 1
 #   			fprintf(out, "%s", Z3_sort_to_string(c,ty
 #       end
-#       num_fields::Uint32 = Z3_get_tuple_sort_num_fields(c, ty);
+#       num_fields::UInt32 = Z3_get_tuple_sort_num_fields(c, ty);
 #       fprintf(out, "(");
 #       for i = 1:num_fields
 #         Z3_func_decl field = Z3_get_tuple_sort_field_decl(c, ty, i);
@@ -413,7 +413,7 @@ end
 #       display_sort(c, out, t);
 #     elseif ast_kind == Z3_APP_AST
 #       app::Z3_app = Z3_to_app(c, v);
-#       num_fields::Uint32 = Z3_get_app_num_args(c, app);
+#       num_fields::UInt32 = Z3_get_app_num_args(c, app);
 #       d::Z3_func_decl = Z3_get_app_decl(c, app);
 #       fprintf(out, "%s", Z3_func_decl_to_string(c, d));
 #       if (num_fields > 0)

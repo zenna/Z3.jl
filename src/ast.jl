@@ -117,7 +117,7 @@ distinct(x::RealAst...; ctx::Context = global_context()) =
 vaarg_real_real_real = @compat Dict(:(-) => mk_sub, :(*) => mk_mul, :(+) => mk_add)
 for (op, func) in vaarg_real_real_real
   @eval ($op)(x::RealAst, y::RealAst; ctx::Context = global_context()) =
-    AppAst{Real}($func(ctx, Uint32(2), Any[x, y])) #Fixme: Loose type any because X and Y may share no parent
+    AppAst{Real}($func(ctx, UInt32(2), Any[x, y])) #Fixme: Loose type any because X and Y may share no parent
 
   # FIXME: This is a repeat of above, only need to specify it once
   @eval ($op)(x::RealAst, y::IntegerAst; ctx::Context = global_context()) =
@@ -127,7 +127,7 @@ for (op, func) in vaarg_real_real_real
     ($op)(to_real(x; ctx=ctx), y; ctx=ctx)
 
   @eval ($op)(x::IntegerAst, y::IntegerAst; ctx::Context = global_context()) =
-    AppAst{Integer}($func(ctx, Uint32(2), Any[x, y])) #Fixme: Loose type any because X and Y may share no parent
+    AppAst{Integer}($func(ctx, UInt32(2), Any[x, y])) #Fixme: Loose type any because X and Y may share no parent
 
   # Concrete
   @eval ($op)(x::RealAst, y::LeafReal; ctx::Context = global_context()) =
@@ -217,7 +217,7 @@ end
 vararg_bool_bool_bool = @compat Dict(:(&) => mk_and, :(|) => mk_or)
 for (op, func) in vararg_bool_bool_bool
   @eval ($op)(x::BoolAst, y::BoolAst; ctx::Context = global_context()) =
-    AppAst{Bool}($func(ctx, Uint32(2), Any[x, y])) #Fixme: Loose type any because X and Y may share no parent
+    AppAst{Bool}($func(ctx, UInt32(2), Any[x, y])) #Fixme: Loose type any because X and Y may share no parent
 
   @eval ($op)(x::IntegerAst, y::LeafReal; ctx::Context = global_context()) =
     ($op)(x, NumeralAst(Bool, y); ctx=ctx)
