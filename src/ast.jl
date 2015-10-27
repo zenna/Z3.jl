@@ -1,7 +1,6 @@
-##  AST
-## ====
-# abstract syntax tree node. That is, the data-structure used in Z3 to represent
-# terms, formulas and types.
+##  AST abstract syntax tree: datatype used in Z3 to for terms, formulas, sorts.
+## ============================================================================
+
 function Var{T<: MathNumber}(::Type{T};
                           name::ASCIIString = genvar(),
                           ctx::Context = global_ctx())

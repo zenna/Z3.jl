@@ -36,7 +36,6 @@ end
 
 ## Rational Numerals
 ## =================
-
 function NumeralAst(::Type{Real}, v::Rational{Int32}; ctx::Context = global_ctx())
   NumeralAst{Real}(mk_real(ctx, Int32(v.den), Int32(v.num)))
 end
