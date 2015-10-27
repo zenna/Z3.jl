@@ -26,6 +26,11 @@ function reset_global_ctx()
   create_global_ctx!(l)
 end
 
+"Disable use of global ctx, useful for debugging"
+function disable_global_ctx()
+  @eval global_ctx() =  error("global_ctx_disabled")
+end
+
 """
 Enable model construction. Other configuration parameters can be passed in the
 cfg variable.  Also enable tracing to stderr and register custom error handler.

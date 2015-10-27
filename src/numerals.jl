@@ -19,48 +19,58 @@ mk_sort(::Type{Integer}) = IntSort
 ## Integer Numerals
 ## ================
 function NumeralAst{T <: IntegerTypes}(::Type{T}, v::Int32; ctx::Context = global_ctx())
+  @show "this"
   NumeralAst{T}(mk_int(ctx, v, mk_sort(T)(ctx=ctx)))
 end
 
 function NumeralAst{T <: IntegerTypes}(::Type{T}, v::Int64; ctx::Context = global_ctx())
+  @show "is"
   NumeralAst{T}(mk_int64(ctx, v, mk_sort(T)(ctx=ctx)))
 end
 
 function NumeralAst{T <: IntegerTypes}(::Type{T}, v::UInt32; ctx::Context = global_ctx())
+  @show "what"
   NumeralAst{T}(mk_unsigned_int(ctx, v, mk_sort(T)(ctx=ctx)))
 end
 
 function NumeralAst{T <: IntegerTypes}(::Type{T}, v::UInt64; ctx::Context = global_ctx())
+  @show "were"
   NumeralAst{T}(mk_unsigned_int64(ctx, v, mk_sort(T)(ctx=ctx)))
 end
 
 ## Rational Numerals
 ## =================
 function NumeralAst(::Type{Real}, v::Rational{Int32}; ctx::Context = global_ctx())
+  @show "making"
   NumeralAst{Real}(mk_real(ctx, Int32(v.den), Int32(v.num)))
 end
 
 function NumeralAst(::Type{Real}, v::Rational{Int64}; ctx::Context = global_ctx())
+  @show "foreal"
   NumeralAst(Real, "$(v.den)/$(v.num)"; ctx=ctx)
 end
 
 "Construct real valued numeral from integer by converting to rational"
 function NumeralAst(::Type{Real}, v::Integer; ctx::Context = global_ctx())
+  @show "ok"
   NumeralAst{Real}(mk_real(ctx, Int32(v), Int32(1)))
 end
 
 "Construct float numeral from rational conversion of float"
 function NumeralAst(::Type{Real}, v::Float64; ctx::Context = global_ctx())
+  @show "gotit"
   NumeralAst(Real, Rational(v); ctx=ctx)
 end
 
 "Construct real numeral from string"
 function NumeralAst{T <: NumberTypes}(::Type{T}, v::ASCIIString; ctx::Context = global_ctx())
-  NumeralAst{Real}(mk_numeral(ctx, v, mk_sort(T)(ctx=ctx)))
+  @show "badass"
+  NumeralAst{T}(mk_numeral(ctx, v, mk_sort(T)(ctx=ctx)))
 end
 
 ## Bool
 function NumeralAst(x::Bool; ctx::Context = global_ctx())
+  @show "whybool"
   NumeralAst{Bool}(x ? mk_true(ctx) : mk_false(ctx))
 end
 

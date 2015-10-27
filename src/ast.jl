@@ -86,7 +86,7 @@ for (op,func) in real_real_bool
     ($op)(to_real(x; ctx=ctx), y; ctx=ctx)
 
   @eval ($op)(x::IntegerAst, y::IntegerAst; ctx::Context = global_ctx()) =
-    ($op)(x, y; ctx=ctx)
+    AppAst{Bool}($func(ctx, x, y))
 
   # Concrete Types
   @eval ($op)(x::RealAst, y::LeafReal; ctx::Context = global_ctx()) =
