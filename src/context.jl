@@ -40,19 +40,6 @@ end
 """
 Create a logical context.
 Enable model construction only.
-Also enable tracing to stderr and register standard error handler.
-"""
-function mk_context_error()
-  cfg = Z3_mk_config()
-  ctx = mk_context_custom(cfg, error_handler)
-  Z3_del_config(cfg)
-  ctx
-end
-
-"""
-Create a logical context.
-Enable model construction only.
-Also enable tracing to stderr and register standard error handler.
 """
 function mk_context()
   cfg = mk_config()
@@ -81,7 +68,7 @@ Also enable tracing to stderr and register standard error handler.
 function mk_proof_context()
   cfg = Z3_mk_config();
   Z3_set_param_value(cfg, "proof", "true");
-  ctx = mk_context_custom(cfg, throw_z3_error);
+  ctx = mk_context(cfg)
   Z3_del_config(cfg);
   ctx
 end
