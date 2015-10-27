@@ -3,14 +3,13 @@
 [![Build Status](https://travis-ci.org/zenna/Z3.jl.svg?branch=master)](https://travis-ci.org/zenna/Z3.jl)
 
 This is a Julia interface to Z3 - a high performance theorem prover developed at Microsoft Research.
-
 Z3 can solve [satisfiability modulo theory (SMT)](https://en.wikipedia.org/wiki/Satisfiability_modulo_theories) problems.
 
 ## Usage
 
 Have Z3 installed with shared libraries in your path.
 
-```
+```julia
 using Z3.jl
 ```
 
@@ -25,8 +24,7 @@ model(Int, A)       # Return a value for A in type Int = i.e. 15
 ## API Details
 
 Z3.jl is a relatively lightweight wrapper.
-By this I mean there's mostly direct access to the C-APi, Z3.jl doesn't prevent Z3 from terminating your program if you use it incorrectly.
-
+By this I mean there's mostly direct access to the C-API, and Z3.jl doesn't prevent Z3 from terminating your program if you use it incorrectly.
 There are some conveniences however.  In particular:
 
 ### Global Context
@@ -58,7 +56,7 @@ s = Solver() # Equivalently s = Solver(ctx=global_context())
 A = Var(Real)
 B = Var(Real)
 add!(A == B; solver = s)
-check(solver = s)
+check(;solver = s)
 ```
 
 __Warning__: Ensure you don't mix and match variables and assertions with different contexts and solvers or Z3 will probably crash.  This is particularly easy to do with arithmetic operations and the global context.  One way to ensure you are not usung the global context when you don't mean to is to call disable_global_context!() which will throw an error if you attempt to use it.
@@ -81,9 +79,10 @@ Note that `Z3_ast` is just a typealias alias `Ptr{Void}`.
 This is true for all types that begin with `Z3`.
 The corresponding julia type is `Ast`
 
-The `@wrap` performs some creative metaprogramming to create a new function `mk_eq` (prefix `Z3_` has been dropped) which will accept the julia types, and treats context arguments as keyword parameters, e.g:
+The `@wrap` performs some creative metaprogramming to create a new function `mk_eq` (prefix `Z3_` has been dropped) which will accept the julia types, and treats `context` arguments instead as keyword parameters, e.g:
 
 ```julia
+# Return the expression l == r
 function mk_eq(l::Ast, r::Ast; ctx::Context = global_context())
   ...
   return x::Ast
@@ -95,5 +94,5 @@ Which can be used more conveniently than dealing with the c pointers.
 ```julia
 A = Var(Integer)
 B = Var(Integer)
-nk_eq(A, B)
+mk_eq(A, B)
 ```
