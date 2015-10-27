@@ -1,6 +1,6 @@
 """Create a new (incremental) solver. This solver also uses a set of builtin tactics
 for handling the first check-sat command, and check-sat commands that take more than
-  a given number of milliseconds to be solved."""
+a given number of milliseconds to be solved."""
 Solver(;ctx=global_ctx()) = Solver(mk_solver(ctx))
 
 """Create a new solver customized for the given logic.

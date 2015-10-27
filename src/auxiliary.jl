@@ -17,66 +17,6 @@ end
 #   error("incorrect use of Z3")
 # end
 
-"""
-Enable model construction. Other configuration parameters can be passed in the
-cfg variable.  Also enable tracing to stderr and register custom error handler.
-"""
-function mk_context_custom(cfg::Z3_config, err::Z3_error_handler)
-  Z3_set_param_value(cfg, "model", "true");
-  ctx = Z3_mk_context(cfg);
-  Z3_set_error_handler(ctx, err);
-  ctx
-end
-
-"""
-Create a logical context.
-Enable model construction only.
-Also enable tracing to stderr and register standard error handler.
-"""
-function mk_context_error()
-  cfg = Z3_mk_config()
-  ctx = mk_context_custom(cfg, error_handler)
-  Z3_del_config(cfg)
-  ctx
-end
-
-"""
-Create a logical context.
-Enable model construction only.
-Also enable tracing to stderr and register standard error handler.
-"""
-function mk_context()
-  cfg = mk_config()
-  ctx = mk_context(cfg)
-  del_config(cfg)
-  ctx
-end
-
-"Create a context under a specified logic."
-function mk_context(l::Logic)
-  cfg = mk_config()
-  ctx = mk_context(cfg)
-  del_config(cfg)
-  set_logic(ctx, string(l))
-  ctx
-end
-
-"""
-Create a logical context.
-
-Enable fine-grained proof construction.
-Enable model construction.
-
-Also enable tracing to stderr and register standard error handler.
-"""
-function mk_proof_context()
-  cfg = Z3_mk_config();
-  Z3_set_param_value(cfg, "proof", "true");
-  ctx = mk_context_custom(cfg, throw_z3_error);
-  Z3_del_config(cfg);
-  ctx
-end
-
 "Create a variable using the given name and type"
 function mk_var(ctx::Z3_context, name::ASCIIString, ty::Z3_sort)
   s::Z3_symbol = Z3_mk_string_symbol(ctx, name)

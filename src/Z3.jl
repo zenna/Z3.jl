@@ -38,7 +38,7 @@ include("numerals.jl")
 include("solver.jl")
 include("accessor.jl")
 
-include("auxiliary.jl")
+# include("auxiliary.jl")
 
 export Var,
   distinct,
