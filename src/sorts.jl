@@ -3,11 +3,11 @@
 
 ## Constructing Sorts
 ## =================
-UninterpretedSort(s::Z3Symbol;ctx::Context=global_context()) =
+UninterpretedSort(s::Z3Symbol;ctx::Context=global_ctx()) =
   UninterpretedSort(mk_uninterpreted_sort(ctx, s))
-BoolSort(;ctx::Context=global_context()) = BoolSort(mk_bool_sort(ctx))
-IntSort(;ctx::Context=global_context()) = IntSort(mk_int_sort(ctx))
-RealSort(;ctx::Context=global_context()) = IntSort(mk_real_sort(ctx))
+BoolSort(;ctx::Context=global_ctx()) = BoolSort(mk_bool_sort(ctx))
+IntSort(;ctx::Context=global_ctx()) = IntSort(mk_int_sort(ctx))
+RealSort(;ctx::Context=global_ctx()) = IntSort(mk_real_sort(ctx))
 
 convert{T <: Sort}(::Type{T}, x::UnknownSort) = T(x.ptr)
 

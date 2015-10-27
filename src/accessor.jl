@@ -4,7 +4,7 @@ get_numeral_mk(::Type{UInt64}) = get_numeral_uint64
 get_numeral_mk(::Type{UInt32}) = get_numeral_uint
 
 function model{T<:Integer}(::Type{T}, x::RealVarAst;
-                           ctx::Context=global_context(),
+                           ctx::Context=global_ctx(),
                            s::Solver=global_solver())
   m = solver_get_model(ctx, s)
   func_decl = model_get_const_decl(ctx, m, UInt32(x.i))
@@ -15,7 +15,7 @@ function model{T<:Integer}(::Type{T}, x::RealVarAst;
 end
 
 function model(::Type{Rational}, x::RealVarAst;
-              ctx::Context=global_context(),
+              ctx::Context=global_ctx(),
               s::Solver=global_solver())
   m = solver_get_model(ctx, s)
   func_decl = model_get_const_decl(ctx, m, UInt32(x.i))
@@ -27,7 +27,7 @@ function model(::Type{Rational}, x::RealVarAst;
 end
 
 function model(::Type{ASCIIString}, x::RealVarAst;
-              ctx::Context=global_context(),
+              ctx::Context=global_ctx(),
               s::Solver=global_solver())
   m = solver_get_model(ctx, s)
   func_decl = model_get_const_decl(ctx, m, UInt32(x.i))
@@ -36,14 +36,14 @@ function model(::Type{ASCIIString}, x::RealVarAst;
 end
 
 function model(::Type{BigFloat},x::RealVarAst;
-              ctx::Context=global_context(),
+              ctx::Context=global_ctx(),
               s::Solver=global_solver())
   model_str = model(ASCIIString, x; s=s, ctx=ctx)
   parse(BigFloat, model_str)
 end
 
 function model(::Type{BigInt},x::RealVarAst;
-              ctx::Context=global_context(),
+              ctx::Context=global_ctx(),
               s::Solver=global_solver())
   model_str = model(ASCIIString, s, x; ctx=ctx)
   parse(BigInt, model_str)

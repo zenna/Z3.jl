@@ -596,7 +596,7 @@ macro wrap(func_def)
 
   # If first arg is ctx, make a kwarg version of the function
   if length(func_args) > 0 && arg_type(func_args[1]) == :(Z3_context)
-    kw_params = Expr(:parameters, Expr(:kw, Expr(:(::), :ctx, :Context), Expr(:call, :global_context)))
+    kw_params = Expr(:parameters, Expr(:kw, Expr(:(::), :ctx, :Context), Expr(:call, :global_ctx)))
     kw_params2 = Expr(:call, short_name, kw_params, converted_args[2:end]...)
     kw_decl = Expr(:function, kw_params2, wrapped_call)
     esc(func_def)
