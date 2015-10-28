@@ -34,6 +34,7 @@ include("sorts.jl")
 include("logic.jl")
 include("context.jl")
 include("ast.jl")
+include("array.jl")
 include("numerals.jl")
 include("solver.jl")
 include("accessor.jl")
@@ -46,7 +47,10 @@ export Var,
   biimplies,
   add!,
   check,
-  model
+  model,
+  reset_global_ctx!,
+  global_ctx,
+  global_solver
 
 #Z3 Types
 export  UnknownSort,

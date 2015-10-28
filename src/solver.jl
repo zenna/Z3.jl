@@ -25,12 +25,12 @@ function reset_global_solver()
 end
 
 ## Convenience functions
-function add!(x::BoolAst, ctx::Context=global_ctx(),
-                          slv::Solver=global_solver())
-  solver_assert(ctx, slv, x)
+function add!(x::BoolAst; ctx::Context=global_ctx(),
+                          solver::Solver=global_solver())
+  solver_assert(ctx, solver, x)
 end
 
-function check(ctx::Context=global_ctx(),
-               slv::Solver=global_solver())
-  solver_check(ctx, slv)
+function check(;ctx::Context=global_ctx(),
+               solver::Solver=global_solver())
+  solver_check(ctx, solver)
 end

@@ -1,18 +1,13 @@
 ##  AST abstract syntax tree: datatype used in Z3 to for terms, formulas, sorts.
 ## ============================================================================
 
+"Construct a variable of type `T`"
 function Var{T<: MathNumber}(::Type{T};
                           name::ASCIIString = genvar(),
                           ctx::Context = global_ctx())
   # safe_add!(name, ctx)
   RealVarAst{T}(mk_var(T, ctx, name),0)
 end
-
-## Constructing Sorts
-## =================
-mk_sort(::Type{Bool}) = mk_bool_sort
-mk_sort(::Type{Real}) = mk_real_sort
-mk_sort(::Type{Integer}) = mk_int_sort
 
 ## Make variables
 ## ==============

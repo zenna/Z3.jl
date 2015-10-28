@@ -97,27 +97,95 @@ typealias FixedpointReduceAppCallbackFptrPtr Ptr{Void}
 
 abstract Z3CType
 
-# Sort types
+## Sort types
+## =========
 abstract Sort <: Z3CType
 convert(::Type{Sort}, x::Ptr{Void}) = UnknownSort(x)
-type UnknownSort <: Sort ptr::SortPtr end
-type UninterpretedSort <: Sort ptr::SortPtr end
-type BoolSort <: Sort ptr::SortPtr end
-type IntSort <: Sort ptr::SortPtr end
-type RealSort <: Sort ptr::SortPtr end
-type BitVectorSort{S} <: Sort ptr::SortPtr end
-type FiniteDomainSort <: Sort ptr::SortPtr end
-type ArraySort <: Sort ptr::SortPtr end
-type TupleSort <: Sort ptr::SortPtr end
-type EnumerationSort <: Sort ptr::SortPtr end
-type ListSort <: Sort ptr::SortPtr end
+type UnknownSort <: Sort
+  ptr::SortPtr
+  UnknownSort(ptr::SortPtr) = new(ptr)
+end
 
-type Z3Symbol <: Z3CType ptr::Z3SymbolPtr end
-type Literals <: Z3CType ptr::LiteralsPtr end
-type Theory <: Z3CType ptr::TheoryPtr end
-type Config <: Z3CType ptr::ConfigPtr end
-type Context <: Z3CType ptr::ContextPtr end
-type FuncDecl <: Z3CType ptr::FuncDeclPtr end
+type UninterpretedSort <: Sort
+  ptr::SortPtr
+  UninterpretedSort(ptr::SortPtr) = new(ptr)
+end
+
+type BoolSort <: Sort
+  ptr::SortPtr
+  BoolSort(ptr::SortPtr) = new(ptr)
+end
+
+type IntSort <: Sort
+  ptr::SortPtr
+  IntSort(ptr::SortPtr) = new(ptr)
+end
+
+type RealSort <: Sort
+  ptr::SortPtr
+  RealSort(ptr::SortPtr) = new(ptr)
+end
+
+type BitVectorSort{SZ} <: Sort
+  ptr::SortPtr
+  BitVectorSort() = new{SZ}(ptr)
+end
+
+type FiniteDomainSort <: Sort
+  ptr::SortPtr
+  FiniteDomainSort(ptr::SortPtr) = new(ptr)
+end
+
+type ArraySort <: Sort
+  ptr::SortPtr
+  ArraySort(ptr::SortPtr) = new(ptr)
+end
+
+type TupleSort <: Sort
+  ptr::SortPtr
+  TupleSort(ptr::SortPtr) = new(ptr)
+end
+
+type EnumerationSort <: Sort
+  ptr::SortPtr
+  EnumerationSort(ptr::SortPtr) = new(ptr)
+end
+
+type ListSort <: Sort
+  ptr::SortPtr
+  ListSort(ptr::SortPtr) = new(ptr)
+end
+
+
+type Z3Symbol <: Z3CType
+  ptr::Z3SymbolPtr
+  Z3Symbol(ptr::Z3SymbolPtr) = new(ptr)
+end
+
+type Literals <: Z3CType
+  ptr::LiteralsPtr
+  Literals(ptr::LiteralsPtr) = new(ptr)
+end
+
+type Theory <: Z3CType
+  ptr::TheoryPtr
+  Theory(ptr::TheoryPtr) = new(ptr)
+end
+
+type Config <: Z3CType
+  ptr::ConfigPtr
+  Config(ptr::ConfigPtr) = new(ptr)
+end
+
+type Context <: Z3CType
+  ptr::ContextPtr
+  Context(ptr::ContextPtr) = new(ptr)
+end
+
+type FuncDecl <: Z3CType
+  ptr::FuncDeclPtr
+  FuncDecl(ptr::FuncDeclPtr) = new(ptr)
+end
 
 ## Ast types
 # The issues with ASTS:
@@ -172,7 +240,7 @@ end
 "Real Valued Variable of numeric type `T`"
 type RealVarAst{T <: MathNumber} <: Real
   ptr::Z3_ast
-  i::Integer #FIXME: Should this be here?
+  i::Integer # this is the ith variable created in this context?
 end
 
 "quantifiers"
@@ -193,6 +261,15 @@ end
 "internal"
 type UnknownAst
   ptr::Z3_ast
+end
+
+## ArrayAst
+
+"Array{DomainSort, RangeSort}"
+type ArrayAst{D, R}
+  ptr::Z3_ast
+  ArrayAst(ptr::Z3_ast) = new{R,D}(ptr)
+  ArrayAst(ast::Ast) = new{R,D}(ast.ptr)
 end
 
 AbstractAst = Union{Ast, AppAst, VarAst, RealVarAst, QuantifierAst, SortAst, FuncDeclAst, NumeralAst, UnknownAst}
@@ -1616,7 +1693,7 @@ end
     ccall((:Z3_model_dec_ref,"libz3"),Void,(Z3_context,Z3_model),ctx,m)
 end
 
-@wrap function Z3_model_eval(ctx::Z3_context,m::Z3_model,t::Z3_ast,model_completion::Z3_bool,v::Ptr{Z3_ast})
+@wrap function Z3_model_eval(ctx::Z3_context,m::Z3_model,t::Z3_ast,model_completion::Z3_bool,v::Ref{Z3_ast})
     ccall((:Z3_model_eval,"libz3"),Z3_bool,(Z3_context,Z3_model,Z3_ast,Z3_bool,Ptr{Z3_ast}),ctx,m,t,model_completion,v)
 end
 
