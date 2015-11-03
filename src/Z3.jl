@@ -50,7 +50,8 @@ export Var,
   model,
   reset_global_ctx!,
   global_ctx,
-  global_solver
+  global_solver,
+  interpret
 
 #Z3 Types
 export  UnknownSort,

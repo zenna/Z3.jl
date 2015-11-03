@@ -13,12 +13,12 @@ c = Var(Integer)
 add!(a * b > c)
 check()
 m = model()
-model(Int, a, m)
+interpret(Rational, a, m)
 """
 model(;ctx::Context=global_ctx(), solver::Solver=global_solver()) = solver_get_model(solver;ctx=ctx)
 
 "Interpret a value `x` in a model `m`"
-function interpret{T}(
+function interpret{T <: Integer}(
     ::Type{T},
     x::RealVarAst,
     m::Model;
@@ -115,6 +115,14 @@ function model{T}(
   model(T, x, m; ctx=ctx, solver=solver)
 end
 
+function interpret{T}(
+    ::Type{T},
+    x::Tuple{Vararg{RealVarAst}},
+    m::Model;
+    ctx::Context=global_ctx(),
+    solver::Solver=global_solver())
+  map(xi->interpret(T, xi, m;ctx=ctx,solver=solver), x)
+end
 
 # Z3_model_get_const_interp (__in Z3_context c, __in Z3_model m, __in Z3_func_decl a)
 ##
