@@ -18,7 +18,7 @@ model(Int, a, m)
 model(;ctx::Context=global_ctx(), solver::Solver=global_solver()) = solver_get_model(solver;ctx=ctx)
 
 "Interpret a value `x` in a model `m`"
-function model{T}(
+function interpret{T}(
     ::Type{T},
     x::RealVarAst,
     m::Model;
@@ -36,6 +36,69 @@ function model{T}(
   end
 end
 
+"Interpret a value `x` in a model `m`"
+function interpret(
+    ::Type{Rational},
+    x::RealVarAst,
+    m::Model;
+    ctx::Context=global_ctx(),
+    solver::Solver=global_solver())
+  qval = Ref{Ptr{Void}}(C_NULL)
+  successful = Z3_model_eval(ctx.ptr, m.ptr, x.ptr, Int32(1), qval)
+  if successful == 1
+    qvalast = Ast(qval[])
+    result_num = Ref{Int64}(0)
+    result_den = Ref{Int64}(0)
+    result = get_numeral_rational_int64(ctx, qvalast, result_num, result_den)
+    Rational(result_num[], result_den[])
+  else
+    error("Failed to get model")
+  end
+end
+
+"Interpret a value `x` in a model `m`"
+function interpret(
+    ::Type{ASCIIString},
+    x::RealVarAst,
+    m::Model;
+    ctx::Context=global_ctx(),
+    solver::Solver=global_solver())
+  qval = Ref{Ptr{Void}}(C_NULL)
+  successful = Z3_model_eval(ctx.ptr, m.ptr, x.ptr, Int32(1), qval)
+  if successful == 1
+    qvalast = Ast(qval[])
+    result_num = Ref{Int64}(0)
+    result_den = Ref{Int64}(0)
+    result::ASCIIString = get_numeral_string(ctx, qvalast)
+  else
+    error("Failed to get model")
+  end
+end
+
+# function model(
+#     ::Type{BigFloat},
+#     x::RealVarAst;
+#     ctx::Context=global_ctx(),
+#     solver::Solver=global_solver())
+#
+#   model_str = model(ASCIIString, x; solver=solver, ctx=ctx)
+#   parse(BigFloat, model_str)
+# end
+#
+# function model(
+#     ::Type{BigInt},
+#     x::RealVarAst;
+#     ctx::Context=global_ctx(),
+#     solver::Solver=global_solver())
+#
+#   model_str = model(ASCIIString, solver, x; ctx=ctx)
+#   parse(BigInt, model_str)
+# end
+
+
+## Convenience
+## ==========
+
 """Return a model of variable `x` in integer type `T`
 
 A = Var(Integer)
@@ -52,78 +115,6 @@ function model{T}(
   model(T, x, m; ctx=ctx, solver=solver)
 end
 
-"Returns an ast for the ith value in a modem `m`"
-function model_ast(m::Model, i::Integer; ctx=global_ctx())
-  # Get an ast for the ith value in a model
-  func_decl = model_get_const_decl(ctx, m, UInt32(i))
-  # Return the interpretation of constant func_decl in the model m.
-  # Returns NULL if the model does not assign an interpretation for a.
-  interp_ast = model_get_const_interp(ctx, m, func_decl)
-end
-
-"""Return a model of variable `x` in integer type `T`
-
-A = Var(Integer)
-add!(A > 100)
-a_val = Var(Int64, A)
-"""
-function model{T<:Integer}(
-    ::Type{T},
-    x::RealVarAst;
-    ctx::Context=global_ctx(),
-    solver::Solver=global_solver())
-
-  m = solver_get_model(ctx, solver)
-  interp_ast = model_ast(m, 0; ctx=ctx)
-  result_int = Ref{Int64}(0)
-  result = get_numeral_mk(T)(ctx, interp_ast, result_int)
-  result_int[]::T
-end
-
-function model(
-    ::Type{Rational},
-    x::RealVarAst;
-    ctx::Context=global_ctx(),
-    solver::Solver=global_solver())
-
-  m = solver_get_model(ctx, solver)
-  interp_ast = model_ast(m, 0; ctx=ctx)
-  result_num = Ref{Int64}(0)
-  result_den = Ref{Int64}(0)
-  result = get_numeral_rational_int64(ctx, interp_ast, result_num, result_den)
-  Rational(result_num[], result_den[])
-end
-
-function model(
-    ::Type{ASCIIString},
-    x::RealVarAst;
-    ctx::Context=global_ctx(),
-    solver::Solver=global_solver())
-
-  m = solver_get_model(ctx, solver)
-  interp_ast = model_ast(m, 0; ctx=ctx)
-  str::ASCIIString = get_numeral_string(ctx, interp_ast,)
-end
-
-function model(
-    ::Type{BigFloat},
-    x::RealVarAst;
-    ctx::Context=global_ctx(),
-    solver::Solver=global_solver())
-
-  model_str = model(ASCIIString, x; solver=solver, ctx=ctx)
-  parse(BigFloat, model_str)
-end
-
-function model(
-    ::Type{BigInt},
-    x::RealVarAst;
-    ctx::Context=global_ctx(),
-    solver::Solver=global_solver())
-
-  model_str = model(ASCIIString, solver, x; ctx=ctx)
-  parse(BigInt, model_str)
-end
 
 # Z3_model_get_const_interp (__in Z3_context c, __in Z3_model m, __in Z3_func_decl a)
 ##
