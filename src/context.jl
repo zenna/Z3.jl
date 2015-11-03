@@ -4,13 +4,19 @@
 Context(l::Logic) = mk_context(l)
 Context() = mk_context()
 
+# FIXME, disable_global_ctx!() only works properly when no const here
+const global_ctx_is_disabled = false
+
 "Create a global context, used by default for conveience"
 create_global_ctx() =
   (global default_global_ctx; default_global_ctx = Context())
 
 "Return the global context, used by default for conveience"
-function global_ctx()
   # error("global_ctx_disabled")
+  global global_ctx_is_disabled
+  @show global_ctx_is_disabled
+function global_ctx()
+  global_ctx_is_disabled && error("global context is disabled")
   (global default_global_ctx; default_global_ctx)
 end
 
@@ -28,7 +34,9 @@ end
 
 "Disable use of global ctx, useful for debugging"
 function disable_global_ctx!()
-  @eval global_ctx() =  error("global_ctx_disabled")
+  global global_ctx_is_disabled
+  global_ctx_is_disabled = true
+  # @eval global_ctx() =  error("global_ctx_disabled")
 end
 
 """

@@ -240,7 +240,6 @@ end
 "Real Valued Variable of numeric type `T`"
 type RealVarAst{T <: MathNumber} <: Real
   ptr::Z3_ast
-  i::Integer # this is the ith variable created in this context?
 end
 
 "quantifiers"

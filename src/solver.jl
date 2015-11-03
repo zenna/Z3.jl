@@ -20,6 +20,10 @@ function set_global_solver(slv::Solver)
   default_global_solver = slv
 end
 
+function disable_global_solver!()
+  @eval global_solver() = error("Global Solver Disabled")
+end
+
 function reset_global_solver()
   error("Unimplemented")
 end

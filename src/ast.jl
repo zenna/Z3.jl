@@ -6,7 +6,7 @@ function Var{T<: MathNumber}(::Type{T};
                           name::ASCIIString = genvar(),
                           ctx::Context = global_ctx())
   # safe_add!(name, ctx)
-  RealVarAst{T}(mk_var(T, ctx, name),0)
+  RealVarAst{T}(mk_var(T, ctx, name))
 end
 
 ## Make variables

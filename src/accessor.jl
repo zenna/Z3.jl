@@ -6,14 +6,25 @@ get_numeral_mk(::Type{Int32}) = get_numeral_int
 get_numeral_mk(::Type{UInt64}) = get_numeral_uint64
 get_numeral_mk(::Type{UInt32}) = get_numeral_uint
 
-function amodel{T}(
+"""Get an abstract model which can be queried for Values
+a = Var(Integer)
+b = Var(Integer)
+c = Var(Integer)
+add!(a * b > c)
+check()
+m = model()
+model(Int, a, m)
+"""
+model(;ctx::Context=global_ctx(), solver::Solver=global_solver()) = solver_get_model(solver;ctx=ctx)
+
+"Interpret a value `x` in a model `m`"
+function model{T}(
     ::Type{T},
-    x::RealVarAst;
+    x::RealVarAst,
+    m::Model;
     ctx::Context=global_ctx(),
     solver::Solver=global_solver())
-
-  m = solver_get_model(ctx, solver)
-  qval =Ref{Ptr{Void}}(C_NULL)
+  qval = Ref{Ptr{Void}}(C_NULL)
   successful = Z3_model_eval(ctx.ptr, m.ptr, x.ptr, Int32(1), qval)
   if successful == 1
     qvalast = Ast(qval[])
@@ -21,8 +32,24 @@ function amodel{T}(
     result = get_numeral_mk(T)(ctx, qvalast, result_int)
     result_int[]::T
   else
-    error("Failed  to get model")
+    error("Failed to get model")
   end
+end
+
+"""Return a model of variable `x` in integer type `T`
+
+A = Var(Integer)
+add!(A > 100)
+a_val = Var(Int64, A)
+"""
+function model{T}(
+    ::Type{T},
+    x::RealVarAst;
+    ctx::Context=global_ctx(),
+    solver::Solver=global_solver())
+
+  m = solver_get_model(ctx, solver)
+  model(T, x, m; ctx=ctx, solver=solver)
 end
 
 "Returns an ast for the ith value in a modem `m`"
