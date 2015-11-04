@@ -20,10 +20,9 @@ model(;ctx::Context=global_ctx(), solver::Solver=global_solver()) = solver_get_m
 "Interpret a value `x` in a model `m`"
 function interpret{T <: Integer}(
     ::Type{T},
-    x::RealVarAst,
-    m::Model;
-    ctx::Context=global_ctx(),
-    solver::Solver=global_solver())
+    m::Model,
+    x::RealVarAst;
+    ctx::Context=global_ctx())
   qval = Ref{Ptr{Void}}(C_NULL)
   successful = Z3_model_eval(ctx.ptr, m.ptr, x.ptr, Int32(1), qval)
   if successful == 1
@@ -39,10 +38,9 @@ end
 "Interpret a value `x` in a model `m`"
 function interpret(
     ::Type{Rational},
-    x::RealVarAst,
-    m::Model;
-    ctx::Context=global_ctx(),
-    solver::Solver=global_solver())
+    m::Model,
+    x::RealVarAst;
+    ctx::Context=global_ctx())
   qval = Ref{Ptr{Void}}(C_NULL)
   successful = Z3_model_eval(ctx.ptr, m.ptr, x.ptr, Int32(1), qval)
   if successful == 1
@@ -59,10 +57,9 @@ end
 "Interpret a value `x` in a model `m`"
 function interpret(
     ::Type{ASCIIString},
-    x::RealVarAst,
-    m::Model;
-    ctx::Context=global_ctx(),
-    solver::Solver=global_solver())
+    m::Model,
+    x::RealVarAst;
+    ctx::Context=global_ctx())
   qval = Ref{Ptr{Void}}(C_NULL)
   successful = Z3_model_eval(ctx.ptr, m.ptr, x.ptr, Int32(1), qval)
   if successful == 1
@@ -117,11 +114,10 @@ end
 
 function interpret{T}(
     ::Type{T},
-    x::Tuple{Vararg{RealVarAst}},
-    m::Model;
-    ctx::Context=global_ctx(),
-    solver::Solver=global_solver())
-  map(xi->interpret(T, xi, m;ctx=ctx,solver=solver), x)
+    m::Model,
+    x::Tuple{Vararg{RealVarAst}};
+    ctx::Context=global_ctx())
+  map(xi->interpret(T, m, xi;ctx=ctx), x)
 end
 
 # Z3_model_get_const_interp (__in Z3_context c, __in Z3_model m, __in Z3_func_decl a)
