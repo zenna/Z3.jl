@@ -144,7 +144,7 @@ end
   (^)(x, NumeralAst(Real, y); ctx=ctx)
 
 
-real_real_real = @compat Dict(:(^) => mk_power, :(/) => mk_div, :(+) => mk_add)
+real_real_real = @compat Dict(:(^) => mk_power, :(/) => mk_div)
 for (op, func) in real_real_real
   @eval ($op)(x::RealAst, y::RealAst; ctx::Context = global_ctx()) =
     AppAst{Real}($func(ctx, x, y))
@@ -212,6 +212,9 @@ vararg_bool_bool_bool = @compat Dict(:(&) => mk_and, :(|) => mk_or)
 for (op, func) in vararg_bool_bool_bool
   @eval ($op)(x::BoolAst, y::BoolAst; ctx::Context = global_ctx()) =
     AppAst{Bool}($func(ctx, UInt32(2), Any[x, y])) #Fixme: Loose type any because X and Y may share no parent
+
+  @eval ($op)(x::BoolAst...; ctx::Context = global_ctx()) =
+    AppAst{Bool}($func(ctx, UInt32(length(x)), Any[x...]))
 
   @eval ($op)(x::IntegerAst, y::LeafReal; ctx::Context = global_ctx()) =
     ($op)(x, NumeralAst(Bool, y); ctx=ctx)
