@@ -1,26 +1,13 @@
-language: cpp
-compiler:
-  - clang
+language: julia
 notifications:
   email: false
-env:
-  matrix:
-    - JULIAVERSION="juliareleases"
-    - JULIAVERSION="julianightlies"
+julia:
+  - 0.6
+  - nightly
 before_install:
-  - sudo add-apt-repository ppa:staticfloat/julia-deps -y
-  - sudo add-apt-repository ppa:staticfloat/${JULIAVERSION} -y
+  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
   - sudo apt-get update -qq -y
-  - sudo apt-get install libpcre3-dev julia -y
-  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+  - sudo apt-get install libstdc++6 libpcre3-dev -y
 script:
-  - git clone git://github.com/Z3Prover/z3.git extern/z3
-  - cd extern/z3
-  - python scripts/mk_make.py  --prefix=`pwd`/install
-  - cd build
-  - make
-  - make install
-  - cd ../install/lib/
-  - export LD_LIBRARY_PATH=`pwd`
-  - cd ../../../..
-  - julia -e 'Pkg.init(); Pkg.clone(pwd()); Pkg.test("Z3")'
+  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+  - julia -e 'Pkg.init(); Pkg.clone(pwd()); Pkg.build("Z3"); Pkg.test("Z3")'
