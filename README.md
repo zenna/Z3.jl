@@ -5,9 +5,17 @@
 This is a Julia interface to Z3 - a high performance theorem prover developed at Microsoft Research.
 Z3 can solve [satisfiability modulo theory (SMT)](https://en.wikipedia.org/wiki/Satisfiability_modulo_theories) problems.
 
+## Install
+
+*Prerequisites*: Have Z3 installed with shared libraries in your path.
+
+```julia
+Pkg.clone("git@github.com:zenna/Z3.jl.git")
+```
+
+
 ## Usage
 
-Have Z3 installed with shared libraries in your path.
 
 ```julia
 using Z3.jl
